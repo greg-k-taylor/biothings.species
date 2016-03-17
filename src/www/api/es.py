@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from biothings.www.api.es import ESQuery
+from biothings.www.api.es import ESQueryBuilder
 
 MAX_TAXID_COUNT = 10000
 
@@ -44,7 +45,8 @@ class ESQuery(ESQuery):
     def mget_biothings(self, bid_list, **kwargs):
         '''for /query post request'''
         options = self._get_cleaned_query_options(kwargs)
-        if 'kwargs' in options and 'expand_species' in options['kwargs'] and options['kwargs']['expand_species']:
+        expand = options.get('kwargs', {}).pop('expand_species', False)
+        if expand:
             return self.get_expanded_species_li(bid_list)
         qbdr = ESQueryBuilder(**options.kwargs)
         try:

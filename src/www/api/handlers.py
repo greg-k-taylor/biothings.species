@@ -9,7 +9,7 @@ biothing_settings = BiothingSettings()
 class SpeciesHandler(BiothingHandler):
     ''' This class is for the /species endpoint. '''
     esq = ESQuery()
-    boolean_parameters = set(['raw', 'rawquery', 'fetch_all', 'explain', 'include_children', 'has_gene'])
+    boolean_parameters = set(['raw', 'rawquery', 'fetch_all', 'explain', 'include_children', 'has_gene', 'expand_species'])
 
 class QueryHandler(QueryHandler):
     ''' This class is for the /query endpoint. '''
