@@ -40,7 +40,7 @@ ANNOTATION_ENDPOINT = 'species'
 QUERY_ENDPOINT = 'query'
 API_VERSION = 'v1'
 # TODO Fill in a status id here
-STATUS_CHECK_ID = ''
+STATUS_CHECK_ID = '9606'
 # Path to a file containing a json object with information about elasticsearch fields
 FIELD_NOTES_PATH = ''
 
