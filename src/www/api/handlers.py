@@ -8,24 +8,19 @@ biothing_settings = BiothingSettings()
 
 class SpeciesHandler(BiothingHandler):
     ''' This class is for the /species endpoint. '''
-    esq = ESQuery()
     boolean_parameters = set(['raw', 'rawquery', 'fetch_all', 'explain', 'include_children', 'has_gene', 'expand_species'])
 
 class QueryHandler(QueryHandler):
     ''' This class is for the /query endpoint. '''
-    esq = ESQuery()
 
 class StatusHandler(StatusHandler):
     ''' This class is for the /status endpoint. '''
-    esq = ESQuery()
 
 class FieldsHandler(FieldsHandler):
     ''' This class is for the /metadata/fields endpoint. '''
-    esq = ESQuery()
 
 class MetaDataHandler(MetaDataHandler):
     ''' This class is for the /metadata endpoint. '''
-    esq = ESQuery()
 
 
 def return_applist():

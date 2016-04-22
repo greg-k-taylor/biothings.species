@@ -3,17 +3,17 @@
 # Elasticsearch variables
 # *****************************************************************************
 # elasticsearch server transport url
-ES_HOST = 'localhost:9200'
+ES_HOST = '52.33.60.29:9200'
 # elasticsearch index name
 ES_INDEX_NAME = 'myspecies_current'
 # elasticsearch document type
 ES_DOC_TYPE = 'species'
 # Only these options are passed to the elasticsearch query from kwargs
 ALLOWED_OPTIONS = ['_source', 'start', 'from_', 'size',
-                   'sort', 'explain', 'version', 'facets', 'fetch_all', 
-                   'include_children', 'has_gene', 'expand_species']
+                   'sort', 'explain', 'version', 'facets']
 ES_SCROLL_TIME = '1m'
 ES_SCROLL_SIZE = 1000
+ES_QUERY_MODULE = 'www.api.es'
 
 # *****************************************************************************
 # Google Analytics Settings
@@ -43,4 +43,5 @@ API_VERSION = 'v1'
 STATUS_CHECK_ID = '9606'
 # Path to a file containing a json object with information about elasticsearch fields
 FIELD_NOTES_PATH = ''
-
+JSONLD_CONTEXT_PATH = ''
+NOSETEST_SETTINGS = 'tests.nosetest_config'
