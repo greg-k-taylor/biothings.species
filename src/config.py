@@ -44,4 +44,3 @@ STATUS_CHECK_ID = '9606'
 # Path to a file containing a json object with information about elasticsearch fields
 FIELD_NOTES_PATH = ''
 JSONLD_CONTEXT_PATH = ''
-NOSETEST_SETTINGS = 'tests.nosetest_config'
