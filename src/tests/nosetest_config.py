@@ -7,7 +7,7 @@
 # with contents identical to the file pointed to by JSONLD_CONTEXT_PATH on the 
 # production server (if your intention is to test the production server).
 
-JSONLD_CONTEXT_PATH = ""
+JSONLD_CONTEXT_URL = ""
 API_VERSION = "v1"
 QUERY_ENDPOINT = "query"
 ANNOTATION_ENDPOINT = "species"
@@ -62,7 +62,8 @@ QUERY_GETS = ['9606',
 # -----------------------------------------------------------------------------------
 
 # This is a list of dictionaries to test a POST to the query endpoint
-QUERY_POST_DATA = [{'q': '9606,10090', 'scopes': 'taxid'},
+QUERY_POST_DATA = [{'q': 'homo sapiens, mus musculus', 'scopes':'scientific_name'},
+                   {'q': '9606,10090', 'scopes': 'taxid'},
                    {'q': '9606,10090', 'scopes': 'taxid', 'fields': 'common_name'},
                    {'q': '9606,10090', 'scopes': 'taxid', 'fields': 'common_name', 'jsonld':'true'}
                   ]
