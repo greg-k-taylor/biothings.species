@@ -1,5 +1,5 @@
 ###################################################################################
-# Nosetest settings
+# test settings
 ###################################################################################
 
 # biothings specific options - these should be identical to the production server 
@@ -35,6 +35,13 @@ ANNOTATION_GET_IDS = ['9606',
                       '9606?fields=common_name,taxid', 
                       '9606?jsonld=true'
                      ] 
+ANNOTATION_GET_MSGPACK = ['9606?msgpack=true',
+                          '9606?fields=common_name&msgpack=true']
+ANNOTATION_GET_JSONLD = ['9606?jsonld=true']
+ANNOTATION_GET_FIELDS = ['9606?fields=lineage',
+                         '9606?fields=common_name,taxid']
+ANNOTATION_GET_FILTER = ['9606?filter=lineage',
+                         '9606?filter=common_name,taxid']
 
 # -----------------------------------------------------------------------------------
 
