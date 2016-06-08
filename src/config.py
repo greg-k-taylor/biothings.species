@@ -19,7 +19,7 @@ ES_QUERY_MODULE = 'www.api.es'
 # Google Analytics Settings
 # *****************************************************************************
 # Google Analytics Account ID
-GA_ACCOUNT = ''
+# GA_ACCOUNT = ''
 # Turn this to True to start google analytics tracking
 GA_RUN_IN_PROD = False
 
