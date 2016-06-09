@@ -23,4 +23,4 @@ class MySpeciesTestTornadoClient(AsyncHTTPTestCase, MySpeciesTest):
         return Application(return_applist())
 
 if __name__ == "__main__":
-    unittest.TextTestRunner().run(MySpeciesTestTornadoClient.suite())
+    unittest.TextTestRunner(verbosity=2).run(MySpeciesTestTornadoClient.suite())

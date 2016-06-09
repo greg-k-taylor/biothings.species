@@ -1,0 +1,196 @@
+{
+    "endpoints": [
+        {
+            "name": "s.biothings.io taxonomy query service",
+            "methods": [
+                {
+                    "MethodName": "Species query service",
+                    "Synopsis": "Make a taxonomy query and return a list of matching taxonomy objects. Supports JSONP and CORS as well.",
+                    "HTTPMethod": "GET",
+                    "URI": "/v1/query",
+                    "RequiresOAuth": "N",
+                    "parameters": [
+                        {
+                            "Name": "q",
+                            "Type": "string",
+                            "Required": "Y",
+                            "Description": "query string. Examples: \"9606\", \"homo sapiens\", \"scientific_name:homo*\". The detailed query syntax is based on the mygene/myvariant/elasticsearch query language.  More information can be found at http://docs.myvariant.info/en/latest/doc/variant_query_service.html#query-syntax"
+                        },
+                        {
+                            "Name": "fields",
+                            "Type": "string",
+                            "Description": "a comma-separated list of fields used to limit the fields returned from matching query hits. The supported field names can be found at http://s.biothings.io/metadata/fields.  Note that it supports dot notation, and wildcards as well. Default: \"all\"."
+                        },
+                        {
+                            "Name": "size",
+                            "Type": "integer",
+                            "Description": " the maximum number of matching hits to return (with a cap of 1000 at the moment). Default: 10."
+                        },
+                        {
+                            "Name": "from",
+                            "Type": "integer",
+                            "Description": " the number of matching hits to skip, starting from 0. Combined with the \"size\" parameter, this can be useful for paging. Default: 0. "
+                        },
+                        {
+                            "Name": "sort",
+                            "Type": "string",
+                            "Description": "the comma-separated fields to sort on. Prefix with \"-\" for descending order, otherwise in ascending order. Default: sort by matching scores in decending order."
+                        },
+                        {
+                            "Name": "facets",
+                            "Type": "string",
+                            "Description": "a single field or comma-separated fields to return facets"
+                        },
+                        {
+                            "Name": "fetch_all",
+                            "Type": "string",
+                            "Description": "if TRUE, allows fast retrieval of all unsorted query hits in 1000 hit batches.  The return object contains a _scroll_id field, which when passed back to the query endpoint in the scroll_id parameter, returns the next 1000 unordered results."
+                        },
+                        {
+                            "Name": "scroll_id",
+                            "Type": "string",
+                            "Description": "the scroll_id from a previous request with fetch_all = TRUE.  When this request is made, the response contains the next 1000 unordered query hits from your query (until no hits are left to return).  As the query was supplied in the original query request (with fetch_all = TRUE), the query (q parameter) is ignored if scroll_id is supplied."
+                        },
+                        {
+                            "Name": "callback",
+                            "Type": "string",
+                            "Description": "you can pass a \"callback\" parameter to make a JSONP call."
+                        },
+                        {
+                            "Name": "email",
+                            "Type": "string",
+                            "Description": "If you are regular users of our services, we encourage you to provide us an email, so that we can better track the usage or follow up with you."
+                        }
+                    ]
+                },
+
+                {
+                    "MethodName": "Taxonomy query service via POST",
+                    "Synopsis": "Make taxonomy queries in batch",
+                    "HTTPMethod": "POST",
+                    "URI": "/v1/query",
+                    "RequiresOAuth": "N",
+                    "parameters": [
+                        {
+                            "Name": "q",
+                            "Type": "string",
+                            "Required": "Y",
+                            "Description": "multiple query terms seperated by comma (also support \"+\" or white space), but no wildcard, e.g., \"q=homo sapiens,mus musculus\""
+                        },
+                        {
+                            "Name": "scopes",
+                            "Type": "string",
+                            "Required": "Y",
+                            "Description": "specify one or more fields (separated by comma) as the search \"scopes\", e.g., \"scopes=scientific_name\". The available \"fields\" that can be passed to \"scopes\" parameter are listed here: http://s.biothings.io/metadata/fields"
+                        },
+                        {
+                            "Name": "fields",
+                            "Type": "string",
+                            "Description": "a comma-separated fields to limit the fields returned from the matching gene hits. The supported field names can be found from http://s.biothings.io/metadata/fields Note that it supports dot notation, and wildcards as well.  If \"fields=all\", all available fields will be returned. Default: \"all\"."
+                        },
+                        {
+                            "Name": "email",
+                            "Type": "string",
+                            "Description": "If you are regular users of our services, we encourage you to provide us an email, so that we can better track the usage or follow up with you."
+                        }
+                    ]
+                }
+            ]
+        },
+
+        {
+            "name": "b.biothings.io taxonomy annotation services",
+            "methods": [
+                {
+                    "MethodName": "Taxonomy annotation service",
+                    "Synopsis": "Retrieve taxonomy annotation based on NCBI taxonomy id, support JSONP and CORS as well.",
+                    "HTTPMethod": "GET",
+                    "URI": "/v1/species/:speciesid",
+                    "RequiresOAuth": "N",
+                    "parameters": [
+                        {
+                            "Name": "speciesid",
+                            "Type": "string",
+                            "Required": "Y",
+                            "Description": "NCBI Taxonomy ID"
+                        },
+                        {
+                            "Name": "fields",
+                            "Type": "string",
+                            "Description": "a comma-separated fields to limit the fields returned from the matching hits. The supported field names can be found here http://s.biothings.io/metadata/fields  Note that it supports dot notation, and wildcards as well.  If \"fields=all\", all available fields will be returned. Default: \"all\"."
+                        },
+                        {
+                            "Name": "callback",
+                            "Type": "string",
+                            "Description": "you can pass a \"callback\" parameter to make a JSONP call."
+                        },
+                        {
+                            "Name": "email",
+                            "Type": "string",
+                            "Description": "If you are regular users of our services, we encourage you to provide us an email, so that we can better track the usage or follow up with you."
+                        }
+                    ]
+                },
+
+                {
+                    "MethodName": "Taxonomy annotation service via POST",
+                    "Synopsis": "Make taxonomy queries in batch for a list of NCBI taxonomy ids",
+                    "HTTPMethod": "POST",
+                    "URI": "/v1/species",
+                    "RequiresOAuth": "N",
+                    "parameters": [
+                        {
+                            "Name": "ids",
+                            "Type": "string",
+                            "Required": "Y",
+                            "Description": "multiple taxonomy ids, separated by comma, e.g., \"ids=9606,10030\". Note that currently we only take the input ids up to 1000 maximum, the rest will be omitted."
+                        },
+                        {
+                            "Name": "fields",
+                            "Type": "string",
+                            "Description": "a comma-separated fields to limit the fields returned from the matching hits. The supported field names can be found from here: http://s.biothings.io/metadata/fields  Note that it supports dot notation, and wildcards as well. If \"fields=all\", all available fields will be returned. Default: \"all\"."
+                        },
+                        {
+                            "Name": "email",
+                            "Type": "string",
+                            "Description": "If you are regular users of our services, we encourage you to provide us an email, so that we can better track the usage or follow up with you."
+                        }
+                    ]
+                }
+
+            ]
+        },
+
+        {
+            "name": "s.biothings.io metadata service",
+            "methods": [
+                {
+                    "MethodName": "Metadata service",
+                    "Synopsis": "Get metadata about the data available from s.biothings.io",
+                    "HTTPMethod": "GET",
+                    "URI": "/v1/metadata",
+                    "parameters": [
+                        {
+                            "Name": "callback",
+                            "Type": "string",
+                            "Description": "you can pass a \"callback\" parameter to make a JSONP call."
+                        }
+                    ]
+                },
+                {
+                    "MethodName": "Available fields service",
+                    "Synopsis": "Get list of available fields in s.biothings.io",
+                    "HTTPMethod": "GET",
+                    "URI": "/v1/metadata/fields",
+                    "parameters": [
+                        {
+                            "Name": "callback",
+                            "Type": "string",
+                            "Description": "you can pass a \"callback\" parameter to make a JSONP call."
+                        }
+                    ]
+                }        
+            ]
+        }
+    ]
+}
