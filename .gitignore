@@ -60,3 +60,8 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+# ansible stuff
+.gitmodules
+src/ansible_deploy/
+src/ansible_deploy

@@ -30,7 +30,7 @@ GA_EVENT_GET_ACTION = 'get'
 # 'action' for post request in google analytics event object
 GA_EVENT_POST_ACTION = 'post'
 # url for google analytics tracker
-GA_TRACKER_URL = 'MySpecies.info'
+GA_TRACKER_URL = 's.biothings.info'
 
 # *****************************************************************************
 # URL settings
