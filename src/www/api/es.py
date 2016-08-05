@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 from biothings.www.api.es import ESQuery
 from biothings.www.api.es import ESQueryBuilder
+from biothings.settings import BiothingSettings
+from collections import OrderedDict
+import datetime
+
+bts = BiothingSettings()
 
 MAX_TAXID_COUNT = 10000
 
@@ -41,6 +46,46 @@ class ESQuery(ESQuery):
             if len(taxid_set) >= MAX_TAXID_COUNT:
                 break
         return sorted(taxid_set)[:MAX_TAXID_COUNT]
+
+    def _populate_metadata(self):
+        ''' Populate the metadata '''
+        args = {
+            "body": {
+                "query": {
+                    "match_all": {}
+                },
+                "aggs": {
+                    "ranks": {
+                        "terms": {
+                            "field": "rank",
+                            "size": 50
+                        }
+                    }
+                }
+            },
+            "size": 0,
+            "doc_type": "species"
+        }
+        r = self._es.search(**args)
+        i = self._es.indices.get_settings(index=bts.es_index)
+        m = self._es.indices.get_mapping(index=bts.es_index)
+        m = m[list(m.keys())[0]]['mappings']
+        total_tax_ids = r['hits']['total']
+        taxonomic_distribution = dict([ (x['key'], x['doc_count']) for x in r['aggregations']['ranks']['buckets'] 
+                                        if x['key'] != 'rank'])
+        taxonomic_distribution['no rank'] = taxonomic_distribution['no']
+        del(taxonomic_distribution['no'])
+        creation_date = datetime.datetime.fromtimestamp(float(i[list(i.keys())[0]]['settings']['index']['creation_date'])/1000)
+        ret = {
+            "stats": {
+                "unique taxonomy ids": total_tax_ids,
+                "taxonomic distribution of ids": taxonomic_distribution
+            },
+            "timestamp": creation_date.strftime("%Y-%m-%dT%H:%M:%S")
+        }
+        m[bts.es_doc_type]['_meta'] = ret
+        self._es.indices.put_mapping(index=bts.es_index, doc_type=bts.es_doc_type,body=m)
+        return ret
 
     def mget_biothings(self, bid_list, **kwargs):
         '''for /query post request'''
