@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 from biothings.www.api.es import ESQuery
 from biothings.www.api.es import ESQueryBuilder
-from biothings.settings import BiothingSettings
 from collections import OrderedDict
 import datetime
-
-bts = BiothingSettings()
 
 MAX_TAXID_COUNT = 10000
 
@@ -64,11 +61,11 @@ class ESQuery(ESQuery):
                 }
             },
             "size": 0,
-            "doc_type": "species"
+            "doc_type": self._doc_type
         }
         r = self._es.search(**args)
-        i = self._es.indices.get_settings(index=bts.es_index)
-        m = self._es.indices.get_mapping(index=bts.es_index)
+        i = self._es.indices.get_settings(indexself._index)
+        m = self._es.indices.get_mapping(index=self._index)
         m = m[list(m.keys())[0]]['mappings']
         total_tax_ids = r['hits']['total']
         taxonomic_distribution = dict([ (x['key'], x['doc_count']) for x in r['aggregations']['ranks']['buckets'] 
@@ -83,8 +80,8 @@ class ESQuery(ESQuery):
             },
             "timestamp": creation_date.strftime("%Y-%m-%dT%H:%M:%S")
         }
-        m[bts.es_doc_type]['_meta'] = ret
-        self._es.indices.put_mapping(index=bts.es_index, doc_type=bts.es_doc_type,body=m)
+        m[self._doc_type]['_meta'] = ret
+        self._es.indices.put_mapping(index=self._index, doc_type=self._doc_type,body=m)
         return ret
 
     def mget_biothings(self, bid_list, **kwargs):

@@ -2,7 +2,7 @@
 from biothings.www.api.handlers import MetaDataHandler, BiothingHandler, QueryHandler, StatusHandler, FieldsHandler
 from biothings.settings import BiothingSettings
 from www.api.es import ESQuery
-#import config
+from collections import OrderedDict
 
 bts = BiothingSettings()
 
@@ -21,7 +21,14 @@ class FieldsHandler(FieldsHandler):
 
 class MetaDataHandler(MetaDataHandler):
     ''' This class is for the /metadata endpoint. '''
-
+    def get(self):
+        kwargs = self.get_query_params()
+        _meta = self.esq.get_mapping_meta(**kwargs)
+        _meta['stats'] = OrderedDict([('unique taxonomy ids',_meta['stats']['unique taxonomy ids']),
+            ('taxonomic distribution of ids', OrderedDict([(k,v) for (k,v) in sorted(
+                _meta['stats']['taxonomic distribution of ids'].items(), key=lambda i: i[1], reverse=True)]))])
+        self._fill_software_info(_meta)
+        self.return_json(_meta)
 
 def return_applist():
     ret = [
