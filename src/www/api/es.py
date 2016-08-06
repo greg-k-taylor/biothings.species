@@ -7,10 +7,16 @@ import datetime
 MAX_TAXID_COUNT = 10000
 
 class ESQuery(ESQuery):
+    def _get_options(self, options, kwargs):
+        options.include_children = kwargs.pop('include_children', False)
+        options.has_gene = kwargs.pop('has_gene', False)
+        options.expand_species = kwargs.pop('expand_species', False)
+        return options
+
     def _modify_biothingdoc(self, doc, options=None):
         # overriding this to insert children list, etc.
-        if 'kwargs' in options and 'include_children' in options['kwargs'] and options['kwargs']['include_children']:
-            doc['children'] = self.get_all_children_tax_ids(taxid=int(doc['_id']), has_gene=options['kwargs'].get('has_gene', False), include_self=False, raw=False)
+        if options.include_children:
+            doc['children'] = self.get_all_children_tax_ids(taxid=int(doc['_id']), has_gene=options.has_gene, include_self=False, raw=False)
         return doc
 
     def get_all_children_tax_ids(self, taxid, has_gene=True, include_self=False, raw=False):
@@ -64,8 +70,8 @@ class ESQuery(ESQuery):
             "doc_type": self._doc_type
         }
         r = self._es.search(**args)
-        i = self._es.indices.get_settings(indexself._index)
         m = self._es.indices.get_mapping(index=self._index)
+        i = self._es.indices.get_settings(index=self._index)
         m = m[list(m.keys())[0]]['mappings']
         total_tax_ids = r['hits']['total']
         taxonomic_distribution = dict([ (x['key'], x['doc_count']) for x in r['aggregations']['ranks']['buckets'] 
@@ -76,7 +82,7 @@ class ESQuery(ESQuery):
         ret = {
             "stats": {
                 "unique taxonomy ids": total_tax_ids,
-                "taxonomic distribution of ids": taxonomic_distribution
+                "distribution of taxonomy ids by rank": taxonomic_distribution
             },
             "timestamp": creation_date.strftime("%Y-%m-%dT%H:%M:%S")
         }
@@ -87,36 +93,6 @@ class ESQuery(ESQuery):
     def mget_biothings(self, bid_list, **kwargs):
         '''for /query post request'''
         options = self._get_cleaned_query_options(kwargs)
-        expand = options.get('kwargs', {}).pop('expand_species', False)
-        if expand:
+        if options.expand_species:
             return self.get_expanded_species_li(bid_list)
-        qbdr = ESQueryBuilder(**options.kwargs)
-        try:
-            _q = qbdr.build_multiple_id_query(bid_list, scopes=options.scopes)
-        except QueryError as err:
-            return {'success': False,
-                    'error': err.message}
-        if options.rawquery:
-            return _q
-        res = self._es.msearch(body=_q, index=self._index, doc_type=self._doc_type)['responses']
-        if options.raw:
-            return res
-
-        assert len(res) == len(bid_list)
-        _res = []
-
-        for i in range(len(res)):
-            hits = res[i]
-            qterm = bid_list[i]
-            hits = self._cleaned_res(hits, empty=[], single_hit=False, options=options)
-            if len(hits) == 0:
-                _res.append({u'query': qterm,
-                             u'notfound': True})
-            elif 'error' in hits:
-                _res.append({u'query': qterm,
-                             u'error': True})
-            else:
-                for hit in hits:
-                    hit[u'query'] = qterm
-                    _res.append(hit)
-        return _res
+        return self.mcommon_biothings(bid_list, options, **kwargs)
