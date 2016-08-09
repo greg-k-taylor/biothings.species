@@ -99,7 +99,7 @@
         },
 
         {
-            "name": "b.biothings.io taxonomy annotation services",
+            "name": "s.biothings.io taxonomy annotation services",
             "methods": [
                 {
                     "MethodName": "Taxonomy annotation service",
