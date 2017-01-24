@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from biothings.www.api.es.transform import ESResultTransformer
 from biothings.utils.common import is_str, is_seq
+from collections import OrderedDict
 #import logging
 
 class ESResultTransformer(ESResultTransformer):
@@ -68,6 +69,12 @@ class ESResultTransformer(ESResultTransformer):
             if self.options.expand_species:
                 return sorted(list(set([v for v_list in self._children_query_dict.values() for v in v_list] + [int(x) for x in bid_list])))[:self.max_taxid_count]
         return self._clean_annotation_POST_response(bid_list, res, single_hit)
+
+    def clean_metadata_response(self, res, fields=False):
+        _res = self._clean_metadata_response(res, fields=fields)
+        if not fields and "stats" in _res and "distribution of taxonomy ids by rank" in _res["stats"]:
+            _res["stats"]["distribution of taxonomy ids by rank"] = OrderedDict(sorted(list(_res["stats"]["distribution of taxonomy ids by rank"].items()), key=lambda v: v[1], reverse=True))
+        return _res
 
     def _modify_doc(self, doc):
         if self.options.include_children and doc['_id'] in self._children_query_dict:
