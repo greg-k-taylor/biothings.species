@@ -62,8 +62,12 @@ STATUS_CHECK_ID = ''
 
 # KWARGS for taxon API
 DEFAULT_FALSE_BOOL_TYPEDEF = {'default': False, 'type': bool}
-ANNOTATION_GET_TRANSFORM_KWARGS['include_children'] = DEFAULT_FALSE_BOOL_TYPEDEF
-ANNOTATION_POST_TRANSFORM_KWARGS['include_children'] = DEFAULT_FALSE_BOOL_TYPEDEF
-ANNOTATION_POST_TRANSFORM_KWARGS['expand_species'] = DEFAULT_FALSE_BOOL_TYPEDEF
-QUERY_GET_TRANSFORM_KWARGS['include_children'] = DEFAULT_FALSE_BOOL_TYPEDEF
-QUERY_POST_TRANSFORM_KWARGS['include_children'] = DEFAULT_FALSE_BOOL_TYPEDEF
+ANNOTATION_GET_TRANSFORM_KWARGS.update({'include_children': DEFAULT_FALSE_BOOL_TYPEDEF, 
+                                        'has_gene': DEFAULT_FALSE_BOOL_TYPEDEF})
+ANNOTATION_POST_TRANSFORM_KWARGS.update({'include_children': DEFAULT_FALSE_BOOL_TYPEDEF,
+                                        'has_gene': DEFAULT_FALSE_BOOL_TYPEDEF,
+                                        'expand_species': DEFAULT_FALSE_BOOL_TYPEDEF})
+QUERY_GET_TRANSFORM_KWARGS.update({'include_children': DEFAULT_FALSE_BOOL_TYPEDEF,
+                                    'has_gene': DEFAULT_FALSE_BOOL_TYPEDEF})
+QUERY_POST_TRANSFORM_KWARGS.update({'include_children': DEFAULT_FALSE_BOOL_TYPEDEF,
+                                    'has_gene': DEFAULT_FALSE_BOOL_TYPEDEF})
