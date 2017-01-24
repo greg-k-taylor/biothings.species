@@ -1,11 +1,11 @@
 {
     "endpoints": [
         {
-            "name": "s.biothings.io taxonomy query service",
+            "name": "t.biothings.io taxonomy query service",
             "methods": [
                 {
-                    "MethodName": "Species query service",
-                    "Synopsis": "Make a taxonomy query and return a list of matching taxonomy objects. Supports JSONP and CORS as well.",
+                    "MethodName": "Taxon query service",
+                    "Synopsis": "Make a taxonomy query and return a list of matching taxon objects. Supports JSONP and CORS as well.",
                     "HTTPMethod": "GET",
                     "URI": "/v1/query",
                     "RequiresOAuth": "N",
@@ -19,7 +19,7 @@
                         {
                             "Name": "fields",
                             "Type": "string",
-                            "Description": "a comma-separated list of fields used to limit the fields returned from matching query hits. The supported field names can be found at http://s.biothings.io/metadata/fields.  Note that it supports dot notation, and wildcards as well. Default: \"all\"."
+                            "Description": "a comma-separated list of fields used to limit the fields returned from matching query hits. The supported field names can be found at http://t.biothings.io/metadata/fields.  Note that it supports dot notation, and wildcards as well. Default: \"all\"."
                         },
                         {
                             "Name": "size",
@@ -81,12 +81,12 @@
                             "Name": "scopes",
                             "Type": "string",
                             "Required": "Y",
-                            "Description": "specify one or more fields (separated by comma) as the search \"scopes\", e.g., \"scopes=scientific_name\". The available \"fields\" that can be passed to \"scopes\" parameter are listed here: http://s.biothings.io/metadata/fields"
+                            "Description": "specify one or more fields (separated by comma) as the search \"scopes\", e.g., \"scopes=scientific_name\". The available \"fields\" that can be passed to \"scopes\" parameter are listed here: http://t.biothings.io/metadata/fields"
                         },
                         {
                             "Name": "fields",
                             "Type": "string",
-                            "Description": "a comma-separated fields to limit the fields returned from the matching gene hits. The supported field names can be found from http://s.biothings.io/metadata/fields Note that it supports dot notation, and wildcards as well.  If \"fields=all\", all available fields will be returned. Default: \"all\"."
+                            "Description": "a comma-separated fields to limit the fields returned from the matching gene hits. The supported field names can be found from http://t.biothings.io/metadata/fields Note that it supports dot notation, and wildcards as well.  If \"fields=all\", all available fields will be returned. Default: \"all\"."
                         },
                         {
                             "Name": "email",
@@ -99,25 +99,25 @@
         },
 
         {
-            "name": "b.biothings.io taxonomy annotation services",
+            "name": "t.biothings.io taxonomy annotation services",
             "methods": [
                 {
                     "MethodName": "Taxonomy annotation service",
-                    "Synopsis": "Retrieve taxonomy annotation based on NCBI taxonomy id, support JSONP and CORS as well.",
+                    "Synopsis": "Retrieve taxonomy annotation based on NCBI taxon id, support JSONP and CORS as well.",
                     "HTTPMethod": "GET",
-                    "URI": "/v1/species/:speciesid",
+                    "URI": "/v1/taxon/:taxonid",
                     "RequiresOAuth": "N",
                     "parameters": [
                         {
-                            "Name": "speciesid",
+                            "Name": "taxonid",
                             "Type": "string",
                             "Required": "Y",
-                            "Description": "NCBI Taxonomy ID"
+                            "Description": "NCBI Taxon ID"
                         },
                         {
                             "Name": "fields",
                             "Type": "string",
-                            "Description": "a comma-separated fields to limit the fields returned from the matching hits. The supported field names can be found here http://s.biothings.io/metadata/fields  Note that it supports dot notation, and wildcards as well.  If \"fields=all\", all available fields will be returned. Default: \"all\"."
+                            "Description": "a comma-separated fields to limit the fields returned from the matching hits. The supported field names can be found here http://t.biothings.io/metadata/fields  Note that it supports dot notation, and wildcards as well.  If \"fields=all\", all available fields will be returned. Default: \"all\"."
                         },
                         {
                             "Name": "callback",
@@ -134,21 +134,21 @@
 
                 {
                     "MethodName": "Taxonomy annotation service via POST",
-                    "Synopsis": "Make taxonomy queries in batch for a list of NCBI taxonomy ids",
+                    "Synopsis": "Make taxonomy queries in batch for a list of NCBI taxon ids",
                     "HTTPMethod": "POST",
-                    "URI": "/v1/species",
+                    "URI": "/v1/taxon",
                     "RequiresOAuth": "N",
                     "parameters": [
                         {
                             "Name": "ids",
                             "Type": "string",
                             "Required": "Y",
-                            "Description": "multiple taxonomy ids, separated by comma, e.g., \"ids=9606,10030\". Note that currently we only take the input ids up to 1000 maximum, the rest will be omitted."
+                            "Description": "multiple taxon ids, separated by comma, e.g., \"ids=9606,10030\". Note that currently we only take the input ids up to 1000 maximum, the rest will be omitted."
                         },
                         {
                             "Name": "fields",
                             "Type": "string",
-                            "Description": "a comma-separated fields to limit the fields returned from the matching hits. The supported field names can be found from here: http://s.biothings.io/metadata/fields  Note that it supports dot notation, and wildcards as well. If \"fields=all\", all available fields will be returned. Default: \"all\"."
+                            "Description": "a comma-separated fields to limit the fields returned from the matching hits. The supported field names can be found from here: http://t.biothings.io/metadata/fields  Note that it supports dot notation, and wildcards as well. If \"fields=all\", all available fields will be returned. Default: \"all\"."
                         },
                         {
                             "Name": "email",
@@ -162,11 +162,11 @@
         },
 
         {
-            "name": "s.biothings.io metadata service",
+            "name": "t.biothings.io metadata service",
             "methods": [
                 {
                     "MethodName": "Metadata service",
-                    "Synopsis": "Get metadata about the data available from s.biothings.io",
+                    "Synopsis": "Get metadata about the data available from t.biothings.io",
                     "HTTPMethod": "GET",
                     "URI": "/v1/metadata",
                     "parameters": [
@@ -179,7 +179,7 @@
                 },
                 {
                     "MethodName": "Available fields service",
-                    "Synopsis": "Get list of available fields in s.biothings.io",
+                    "Synopsis": "Get list of available fields in t.biothings.io",
                     "HTTPMethod": "GET",
                     "URI": "/v1/metadata/fields",
                     "parameters": [
