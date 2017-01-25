@@ -76,4 +76,3 @@ logger = setup_default_log(LOGGER_NAME, LOG_FOLDER)
 # to broadcast message to a Hipchat room
 HIPCHAT_CONFIG = {}
 
-DATA_ARCHIVE_ROOT = "./data"

@@ -18,7 +18,7 @@ jmanager = JobManager(loop,
                       )
 
 import dataload
-#import biothings.dataload.uploader as uploader
+import biothings.dataload.uploader as uploader
 import biothings.dataload.dumper as dumper
 #import biothings.databuild.builder as builder
 
@@ -27,11 +27,11 @@ dmanager = dumper.DumperManager(job_manager=jmanager)
 dmanager.register_sources(dataload.__sources__)
 dmanager.schedule_all()
 
-## will check every 10 seconds for sources to upload
-#umanager = uploader.UploaderManager(poll_schedule = '* * * * * */10', job_manager=jmanager)
-#umanager.register_sources(dataload.__sources_dict__)
+# will check every 10 seconds for sources to upload
+umanager = uploader.UploaderManager(poll_schedule = '* * * * * */10', job_manager=jmanager)
+umanager.register_sources(dataload.__sources__)
 #umanager.poll()
-#
+
 #bmanager = builder.BuilderManager(job_manager=jmanager)
 #bmanager.sync()
 
@@ -41,10 +41,9 @@ COMMANDS = {
         # dump commands
         "dm" : dmanager,
         "dump" : dmanager.dump_src,
-        ## upload commands
-        #"um" : umanager,
-        #"upload" : umanager.upload_src,
-        #"upload_all": umanager.upload_all,
+        # upload commands
+        "um" : umanager,
+        "upload" : umanager.upload_src,
         ## building/merging
         #"bm" : bmanager,
         #"merge" : bmanager.merge,
