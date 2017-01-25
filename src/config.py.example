@@ -1,3 +1,5 @@
+from config_common import *
+
 # -*- coding: utf-8 -*-
 # *****************************************************************************
 # Elasticsearch variables
@@ -44,3 +46,34 @@ STATUS_CHECK_ID = '9606'
 # Path to a file containing a json object with information about elasticsearch fields
 FIELD_NOTES_PATH = ''
 JSONLD_CONTEXT_PATH = ''
+
+#######
+# HUB #
+#######
+import os
+
+DATA_SRC_SERVER = 'localhost'
+DATA_SRC_PORT = 27017
+DATA_SRC_DATABASE = 'dev_speciesdoc_src'
+DATA_SRC_SERVER_USERNAME = ''
+DATA_SRC_SERVER_PASSWORD = ''
+
+DATA_TARGET_SERVER = 'localhost'
+DATA_TARGET_PORT = 27017
+DATA_TARGET_DATABASE = 'dev_speciesdoc'
+DATA_TARGET_SERVER_USERNAME = ''
+DATA_TARGET_SERVER_PASSWORD = ''
+
+DATA_ARCHIVE_ROOT = './data'
+DIFF_PATH = os.path.join(DATA_ARCHIVE_ROOT,"diff")
+
+LOG_FOLDER = os.path.join(DATA_ARCHIVE_ROOT,'logs')
+LOGGER_NAME = "species.hub"
+from biothings.utils.loggers import setup_default_log
+logger = setup_default_log(LOGGER_NAME, LOG_FOLDER)
+
+# fill with "token", "roomid" and "from" keys
+# to broadcast message to a Hipchat room
+HIPCHAT_CONFIG = {}
+
+DATA_ARCHIVE_ROOT = "./data"
