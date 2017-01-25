@@ -30,7 +30,7 @@ dmanager.schedule_all()
 # will check every 10 seconds for sources to upload
 umanager = uploader.UploaderManager(poll_schedule = '* * * * * */10', job_manager=jmanager)
 umanager.register_sources(dataload.__sources__)
-#umanager.poll()
+umanager.poll()
 
 #bmanager = builder.BuilderManager(job_manager=jmanager)
 #bmanager.sync()
