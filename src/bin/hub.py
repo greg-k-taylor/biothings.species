@@ -22,6 +22,7 @@ import biothings.dataload.uploader as uploader
 import biothings.dataload.dumper as dumper
 import biothings.databuild.builder as builder
 from databuild.mapper import HasGeneMapper
+from databuild.builder import TaxonomyDataBuilder
 
 dmanager = dumper.DumperManager(job_manager=jmanager)
 dmanager.register_sources(dataload.__sources__)
@@ -33,7 +34,7 @@ umanager.register_sources(dataload.__sources__)
 umanager.poll()
 
 hasgene = HasGeneMapper(name="has_gene")
-pbuilder = partial(builder.DataBuilder,mappers=[hasgene])
+pbuilder = partial(TaxonomyDataBuilder,mappers=[hasgene])
 bmanager = builder.BuilderManager(
         job_manager=jmanager,
         builder_class=pbuilder)
