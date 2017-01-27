@@ -20,8 +20,8 @@ jmanager = JobManager(loop,
 import dataload
 import biothings.dataload.uploader as uploader
 import biothings.dataload.dumper as dumper
-#import biothings.databuild.builder as builder
-
+import biothings.databuild.builder as builder
+from databuild.mapper import HasGeneMapper
 
 dmanager = dumper.DumperManager(job_manager=jmanager)
 dmanager.register_sources(dataload.__sources__)
@@ -32,8 +32,12 @@ umanager = uploader.UploaderManager(poll_schedule = '* * * * * */10', job_manage
 umanager.register_sources(dataload.__sources__)
 umanager.poll()
 
-#bmanager = builder.BuilderManager(job_manager=jmanager)
-#bmanager.sync()
+hasgene = HasGeneMapper(name="has_gene")
+pbuilder = partial(builder.DataBuilder,mappers=[hasgene])
+bmanager = builder.BuilderManager(
+        job_manager=jmanager,
+        builder_class=pbuilder)
+bmanager.sync()
 
 from biothings.utils.hub import schedule, top, pending, done
 
@@ -44,9 +48,9 @@ COMMANDS = {
         # upload commands
         "um" : umanager,
         "upload" : umanager.upload_src,
-        ## building/merging
-        #"bm" : bmanager,
-        #"merge" : bmanager.merge,
+        # building/merging
+        "bm" : bmanager,
+        "merge" : bmanager.merge,
         ## diff
         #"diff" : bmanager.diff,
         ## admin/advanced

@@ -18,6 +18,7 @@ class TaxonomyNamesUploader(uploader.BaseSourceUploader):
 
     main_source = "taxonomy"
     name = "names"
+    __metadata__ = {"mapper" : 'has_gene'}
 
     def load_data(self,data_folder):
         names_file = os.path.join(data_folder,"names.dmp")
