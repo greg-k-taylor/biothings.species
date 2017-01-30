@@ -14,7 +14,7 @@ class ESResultTransformer(ESResultTransformer):
 
     def _children_query(self, ids, has_gene=True, include_self=False, raw=False):
         if is_str(ids) or isinstance(ids, int) or (is_seq(ids) and len(ids) == 1):
-            _ids = ids if is_str(ids) or isinstance(int, ids) else ids[0] 
+            _ids = ids if is_str(ids) or isinstance(ids, int) else ids[0] 
             _qstring = "lineage:{} AND has_gene:true".format(_ids) if has_gene else "lineage:{}".format(_ids)
             res = self.options.es_client.search(body={"query":{"query_string":{"query": _qstring}}},
                 index=self.options.index, doc_type=self.options.doc_type, fields='_id', size=self.max_taxid_count)
