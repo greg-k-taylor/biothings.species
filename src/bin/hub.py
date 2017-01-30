@@ -52,8 +52,7 @@ COMMANDS = {
         # building/merging
         "bm" : bmanager,
         "merge" : bmanager.merge,
-        ## diff
-        #"diff" : bmanager.diff,
+        "diff" : bmanager.diff,
         ## admin/advanced
         #"loop" : loop,
         #"pqueue" : process_queue,
