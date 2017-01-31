@@ -49,6 +49,7 @@ COMMANDS = {
         # upload commands
         "um" : umanager,
         "upload" : umanager.upload_src,
+        "upload_all" : umanager.upload_all,
         # building/merging
         "bm" : bmanager,
         "merge" : bmanager.merge,

@@ -14,7 +14,7 @@ def parse_refseq_names(names_file):
     for taxid, entry in names_gb:
         d = defaultdict(list)
         d['taxid'] = int(taxid)
-        d['_id'] = int(taxid)
+        d['_id'] = taxid
         for line in entry:
             split_line = line.split('\t')
             field = split_line[6]
@@ -51,9 +51,9 @@ def parse_refseq_nodes(nodes_file):
     for line in nodes_file:
         d = dict()
         split_line = line.split('\t')
-        taxid = int(split_line[0])
+        taxid = split_line[0]
         d["_id"] = taxid
-        d['taxid'] = taxid
+        d['taxid'] = int(taxid)
         d['parent_taxid'] = int(split_line[2])
         d['rank'] = split_line[4]
         yield d

@@ -5,6 +5,6 @@ def parse_geneinfo_taxid(fileh):
         if line.startswith("#"):
             # skip header
             continue
-        taxid = int(line.split("\t")[0])
+        taxid = line.split("\t")[0]
         yield {"_id" : taxid}
 
