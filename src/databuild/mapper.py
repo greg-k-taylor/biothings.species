@@ -39,7 +39,7 @@ class LineageMapper(mapper.BaseMapper):
         if self.cache is None:
             col = mongo.get_src_db()[TaxonomyNodesUploader.name]
             self.cache = {}
-            [self.cache.setdefault(d["_id"],d["parent_taxid"]) for d in col.find({},{"parent_taxid":1})]
+            [self.cache.setdefault(d["taxid"],d["parent_taxid"]) for d in col.find({},{"parent_taxid":1,"taxid":1})]
 
     def get_lineage(self,doc):
         if doc['taxid'] == doc['parent_taxid']: #take care of node #1
@@ -52,7 +52,7 @@ class LineageMapper(mapper.BaseMapper):
             parent = self.cache[lineage[-1]]
             lineage.append(parent)
         doc['lineage'] = lineage
-        return doc 
+        return doc
 
     def process(self,docs):
         for doc in docs:
