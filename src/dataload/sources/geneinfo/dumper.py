@@ -16,7 +16,7 @@ class GeneInfoDumper(FTPDumper):
     CWD_DIR = '/gene/DATA'
     SUFFIX_ATTR = "timestamp"
 
-    SCHEDULE = "0 9 * * *"
+    SCHEDULE = "0 10 * * *"
 
     def create_todump_list(self, force=False):
         file_to_dump = "gene_info.gz"

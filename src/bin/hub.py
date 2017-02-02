@@ -37,8 +37,10 @@ hasgene = HasGeneMapper(name="has_gene")
 pbuilder = partial(TaxonomyDataBuilder,mappers=[hasgene])
 bmanager = builder.BuilderManager(
         job_manager=jmanager,
-        builder_class=pbuilder)
+        builder_class=pbuilder,
+        poll_schedule="* * * * * */10")
 bmanager.sync()
+bmanager.poll()
 
 from biothings.utils.hub import schedule, top, pending, done
 

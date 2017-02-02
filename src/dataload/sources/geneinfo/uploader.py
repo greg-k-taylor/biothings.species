@@ -1,6 +1,7 @@
 import os
 
 import biothings.dataload.uploader as uploader
+from biothings.databuild.builder import set_pending_to_build
 import biothings.dataload.storage as storage
 from .parser import parse_geneinfo_taxid
 
@@ -15,3 +16,6 @@ class GeneInfoUploader(uploader.BaseSourceUploader):
         self.logger.info("Load data from file '%s'" % gene_file)
         return parse_geneinfo_taxid(open(gene_file))
 
+    def post_update_data(self, steps, force, batch_size, job_manager):
+        # trigger a merge/build
+        set_pending_to_build()
