@@ -3,9 +3,9 @@ import os
 import biothings.dataload.uploader as uploader
 from .parser import parse_uniprot_speclist
 
-class SpeciesUploader(uploader.BaseSourceUploader):
+class UniprotSpeciesUploader(uploader.BaseSourceUploader):
 
-    name = "species"
+    name = "uniprot_species"
 
     __metadata__ = {"mapper" : 'has_gene'}
 

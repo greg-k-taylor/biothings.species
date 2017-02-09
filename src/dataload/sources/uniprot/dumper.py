@@ -7,9 +7,9 @@ from config import DATA_ARCHIVE_ROOT
 from biothings.dataload.dumper import FTPDumper
 
 
-class SpeciesDumper(FTPDumper):
+class UniprotSpeciesDumper(FTPDumper):
 
-    SRC_NAME = "species"
+    SRC_NAME = "uniprot_species"
     SRC_ROOT_FOLDER = os.path.join(DATA_ARCHIVE_ROOT, SRC_NAME)
     FTP_HOST = 'ftp.uniprot.org'
     CWD_DIR = '/pub/databases/uniprot/current_release/knowledgebase/complete/docs'
