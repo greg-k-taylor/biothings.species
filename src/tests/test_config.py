@@ -1,3 +1,4 @@
+from biothings.tests.settings.default import *
 ###################################################################################
 # test settings
 ###################################################################################
@@ -10,12 +11,12 @@
 JSONLD_CONTEXT_URL = ""
 API_VERSION = "v1"
 QUERY_ENDPOINT = "query"
-ANNOTATION_ENDPOINT = "species"
+ANNOTATION_ENDPOINT = "taxon"
 
 # This is the name of the environment variable to load for testing
-HOST_ENVAR_NAME = 'MS_HOST'
+HOST_ENVAR_NAME = 'MT_HOST'
 # This is the URL of the production server, if the above envar can't be loaded, nosetest defaults to this
-NOSETEST_DEFAULT_URL = "http://s.biothings.io"
+NOSETEST_DEFAULT_URL = "http://t.biothings.io"
 
 ###################################################################################
 # Nosetests used in tests.py, fill these in with IDs/queries.
