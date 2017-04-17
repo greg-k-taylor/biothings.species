@@ -75,4 +75,4 @@ logger = setup_default_log(LOGGER_NAME, LOG_FOLDER)
 # fill with "token", "roomid" and "from" keys
 # to broadcast message to a Hipchat room
 HIPCHAT_CONFIG = {}
-
+HUB_MAX_WORKERS = 2

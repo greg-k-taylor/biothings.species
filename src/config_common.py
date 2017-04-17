@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 from biothings.www.settings.default import *
 from www.api.query_builder import ESQueryBuilder
 from www.api.query import ESQuery
@@ -14,6 +15,8 @@ ES_HOST = 'localhost:9200'
 ES_INDEX = 'taxonomy'
 # elasticsearch document type
 ES_DOC_TYPE = 'taxon'
+# defautlt number_of_shards when create a new index
+ES_NUMBER_OF_SHARDS = 5
 
 API_VERSION = 'v1'
 
@@ -82,10 +85,20 @@ DATA_SRC_BUILD_COLLECTION = 'src_build'     # for src data build information
 
 DATA_TARGET_MASTER_COLLECTION = 'db_master'
 
-# time in seconds for dispatcher to check new jobs
-DISPATCHER_SLEEP_TIME = 10
-# storage class to be used by uploader script
-SOURCE_MANAGER_CLASS = None # use default one
+# reporting diff results, number of IDs to consider (to avoid too much mem usage)
+MAX_REPORTED_IDS = 1000
+# for diff updates, number of IDs randomly picked as examples when rendering the report
+MAX_RANDOMLY_PICKED = 10
+
 # where to store info about processes launched by the hub
 RUN_DIR = './run'
 
+# Max queued jobs in job manager
+# this shouldn't be 0 to make sure a job is pending and ready to be processed
+# at any time (avoiding job submission preparation) but also not a huge number
+# as any pending job will consume some memory).
+MAX_QUEUED_JOBS = os.cpu_count() * 4 
+
+# when creating a snapshot, how long should we wait before querying ES
+# to check snapshot status/completion ? (in seconds)
+MONITOR_SNAPSHOT_DELAY = 10

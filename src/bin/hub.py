@@ -9,7 +9,7 @@ biothings.config_for_app(config)
 
 from biothings.utils.manager import JobManager
 loop = asyncio.get_event_loop()
-process_queue = concurrent.futures.ProcessPoolExecutor(max_workers=2)
+process_queue = concurrent.futures.ProcessPoolExecutor(max_workers=config.HUB_MAX_WORKERS)
 thread_queue = concurrent.futures.ThreadPoolExecutor()
 loop.set_default_executor(process_queue)
 jmanager = JobManager(loop,
@@ -21,8 +21,11 @@ import dataload
 import biothings.dataload.uploader as uploader
 import biothings.dataload.dumper as dumper
 import biothings.databuild.builder as builder
+import biothings.databuild.differ as differ
+import biothings.dataindex.indexer as indexer
 from databuild.mapper import HasGeneMapper
 from databuild.builder import TaxonomyDataBuilder
+from biothings.dataindex.indexer import Indexer 
 
 dmanager = dumper.DumperManager(job_manager=jmanager)
 dmanager.register_sources(dataload.__sources__)
@@ -42,6 +45,13 @@ bmanager = builder.BuilderManager(
 bmanager.sync()
 bmanager.poll()
 
+differ_manager = differ.DifferManager(job_manager=jmanager)
+differ_manager.sync()
+
+pindexer = partial(Indexer,es_host=config.ES_HOST)
+index_manager = indexer.IndexerManager(pindexer=pindexer,job_manager=jmanager)
+index_manager.sync()
+
 from biothings.utils.hub import schedule, top, pending, done
 
 COMMANDS = {
@@ -55,7 +65,14 @@ COMMANDS = {
         # building/merging
         "bm" : bmanager,
         "merge" : bmanager.merge,
-        "diff" : bmanager.diff,
+        # diff
+        "dim" : differ_manager,
+        "diff" : partial(differ_manager.diff,"jsondiff"),
+        "report": differ_manager.diff_report,
+        # indexing commands
+        "im" : index_manager,
+        "index" : index_manager.index,
+        "snapshot" : index_manager.snapshot,
         ## admin/advanced
         #"loop" : loop,
         #"pqueue" : process_queue,
