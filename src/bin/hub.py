@@ -25,7 +25,7 @@ import biothings.databuild.differ as differ
 import biothings.dataindex.indexer as indexer
 from databuild.mapper import HasGeneMapper
 from databuild.builder import TaxonomyDataBuilder
-from biothings.dataindex.indexer import Indexer 
+from dataindex.indexer import TaxonomyIndexer 
 
 dmanager = dumper.DumperManager(job_manager=jmanager)
 dmanager.register_sources(dataload.__sources__)
@@ -48,7 +48,7 @@ bmanager.poll()
 differ_manager = differ.DifferManager(job_manager=jmanager)
 differ_manager.sync()
 
-pindexer = partial(Indexer,es_host=config.ES_HOST)
+pindexer = partial(TaxonomyIndexer,es_host=config.ES_HOST)
 index_manager = indexer.IndexerManager(pindexer=pindexer,job_manager=jmanager)
 index_manager.sync()
 

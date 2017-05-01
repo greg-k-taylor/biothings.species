@@ -102,3 +102,6 @@ MAX_QUEUED_JOBS = os.cpu_count() * 4
 # when creating a snapshot, how long should we wait before querying ES
 # to check snapshot status/completion ? (in seconds)
 MONITOR_SNAPSHOT_DELAY = 10
+
+# compressed cache files
+CACHE_FORMAT = "xz"

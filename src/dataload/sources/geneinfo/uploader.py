@@ -19,3 +19,11 @@ class GeneInfoUploader(uploader.BaseSourceUploader):
     def post_update_data(self, steps, force, batch_size, job_manager):
         # trigger a merge/build
         set_pending_to_build()
+
+    @classmethod
+    def get_mapping(klass):
+        return {
+                "has_gene": {
+                    "type": "boolean"
+                    },
+                }
