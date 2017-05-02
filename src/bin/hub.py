@@ -22,6 +22,7 @@ import biothings.dataload.uploader as uploader
 import biothings.dataload.dumper as dumper
 import biothings.databuild.builder as builder
 import biothings.databuild.differ as differ
+import biothings.databuild.syncer as syncer
 import biothings.dataindex.indexer as indexer
 from databuild.mapper import HasGeneMapper
 from databuild.builder import TaxonomyDataBuilder
@@ -42,15 +43,17 @@ bmanager = builder.BuilderManager(
         job_manager=jmanager,
         builder_class=pbuilder,
         poll_schedule="* * * * * */10")
-bmanager.sync()
+bmanager.configure()
 bmanager.poll()
 
 differ_manager = differ.DifferManager(job_manager=jmanager)
-differ_manager.sync()
+differ_manager.configure()
+syncer_manager = syncer.SyncerManager(job_manager=jmanager)
+syncer_manager.configure()
 
 pindexer = partial(TaxonomyIndexer,es_host=config.ES_HOST)
 index_manager = indexer.IndexerManager(pindexer=pindexer,job_manager=jmanager)
-index_manager.sync()
+index_manager.configure()
 
 from biothings.utils.hub import schedule, top, pending, done
 
@@ -65,6 +68,9 @@ COMMANDS = {
         # building/merging
         "bm" : bmanager,
         "merge" : bmanager.merge,
+        "mongo_sync" : partial(syncer_manager.sync,"mongo"),
+        "es_sync" : partial(syncer_manager.sync,"es"),
+        "sm" : syncer_manager,
         # diff
         "dim" : differ_manager,
         "diff" : partial(differ_manager.diff,"jsondiff"),
