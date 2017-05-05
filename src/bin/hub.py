@@ -67,7 +67,7 @@ COMMANDS = {
         "upload_all" : umanager.upload_all,
         # building/merging
         "bm" : bmanager,
-        "merge" : bmanager.merge,
+        "merge" : partial(bmanager.merge,"taxonomy"),
         "mongo_sync" : partial(syncer_manager.sync,"mongo"),
         "es_sync" : partial(syncer_manager.sync,"es"),
         "sm" : syncer_manager,
@@ -77,7 +77,7 @@ COMMANDS = {
         "report": differ_manager.diff_report,
         # indexing commands
         "im" : index_manager,
-        "index" : index_manager.index,
+        "index" : partial(index_manager.index,"taxonomy"),
         "snapshot" : index_manager.snapshot,
         ## admin/advanced
         #"loop" : loop,
