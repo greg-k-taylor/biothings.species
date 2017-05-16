@@ -74,6 +74,7 @@ COMMANDS = {
         # diff
         "dim" : differ_manager,
         "diff" : partial(differ_manager.diff,"jsondiff"),
+        "upload_diff" : differ_manager.upload_diff,
         "sc_diff" : partial(differ_manager.diff,"jsondiff-selfcontained"),
         "report": differ_manager.diff_report,
         # indexing commands
