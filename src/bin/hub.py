@@ -31,6 +31,16 @@ from dataindex.indexer import TaxonomyIndexer
 dmanager = dumper.DumperManager(job_manager=jmanager)
 dmanager.register_sources(dataload.__sources__)
 dmanager.schedule_all()
+# manually register biothings source.
+# this dumper will work to update an ES index
+from dataload.sources.biothings import BiothingsDumper
+from biothings.utils.es import ESIndexer
+from biothings.utils.backend import DocESBackend
+BiothingsDumper.BIOTHINGS_APP = "t.biothings.io"
+idxr = ESIndexer(index=config.ES_INDEX_NAME,doc_type=config.ES_DOC_TYPE,es_host=config.ES_HOST)
+partial_backend = partial(DocESBackend,idxr,)
+BiothingsDumper.TARGET_BACKEND = partial_backend
+dmanager.register_classes([BiothingsDumper])
 
 # will check every 10 seconds for sources to upload
 umanager = uploader.UploaderManager(poll_schedule = '* * * * * */10', job_manager=jmanager)
