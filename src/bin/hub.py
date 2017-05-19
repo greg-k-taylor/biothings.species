@@ -31,8 +31,8 @@ from dataindex.indexer import TaxonomyIndexer
 dmanager = dumper.DumperManager(job_manager=jmanager)
 dmanager.register_sources(dataload.__sources__)
 dmanager.schedule_all()
-# manually register biothings source.
-# this dumper will work to update an ES index
+# manually register biothings source dumper
+# this dumper will download whatever is necessary to update an ES index
 from dataload.sources.biothings import BiothingsDumper
 from biothings.utils.es import ESIndexer
 from biothings.utils.backend import DocESBackend
@@ -45,6 +45,12 @@ dmanager.register_classes([BiothingsDumper])
 # will check every 10 seconds for sources to upload
 umanager = uploader.UploaderManager(poll_schedule = '* * * * * */10', job_manager=jmanager)
 umanager.register_sources(dataload.__sources__)
+# manually register biothings source uploader
+# this uploader will use dumped data to update an ES index
+from dataload.sources.biothings import BiothingsUploader
+BiothingsUploader.TARGET_BACKEND = partial_backend
+BiothingsUploader.AUTO_PURGE_INDEX = True # because we believe
+umanager.register_classes([BiothingsUploader])
 umanager.poll()
 
 hasgene = HasGeneMapper(name="has_gene")
