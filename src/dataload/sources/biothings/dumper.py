@@ -29,7 +29,7 @@ class BiothingsDumper(HTTPDumper):
     SRC_ROOT_FOLDER = os.path.join(DATA_ARCHIVE_ROOT, SRC_NAME)
 
     # URL is always the same, but headers change (template for app + version)
-    SRC_URL = "http://biothings-diffs.s3-website-us-east-1.amazonaws.com/%s/%s"
+    SRC_URL = "http://biothings-diffs.s3-website-us-east-1.amazonaws.com/%s/%s.json"
 
     # Auto-deploy data update ?
     AUTO_UPLOAD = False
@@ -40,6 +40,9 @@ class BiothingsDumper(HTTPDumper):
     # what backend the dumper should work with. Must be defined before instantiation
     # (can be an instance or a partial() returning an instance
     TARGET_BACKEND = None
+
+    # TODO: should we ensure ARCHIVE is always true ?
+    # (ie we have to keep all versions to apply them in order)
 
 
     def __init__(self, *args, **kwargs):
@@ -74,7 +77,9 @@ class BiothingsDumper(HTTPDumper):
             # we didn't get any json dat, which is weird, anyway remote is not better...
             return False
         remote_version = remote_dat["build_version"]
-        local_version = self.target_backend.version
+        # local version can be taken from backend, and it None (starting from scratch)
+        # from src_dump (meaning we downloaded it but we did not apply it)
+        local_version = self.target_backend.version or self.current_release
         self.logger.info("rmeove %s local %s" % (remote_version,local_version))
         # local_version None means we're starting from scratch.
         if local_version is None:
@@ -84,7 +89,7 @@ class BiothingsDumper(HTTPDumper):
             # ie. version wasn't increased)
             # convert all in GMT to easily compare
             res = os.stat(localfile) # local file in local time
-            local_lastmodified = datetime.datetime.utcfromtimestamp(res.st_mtime) # local file in gmt time
+            local_lastmodified = datetime.datetime.utcfromtimestamp(res.st_mtime) # local file already in gmt time
             res = self.client.get(remotefile) # GET to follow redirection and get proper headers
             if res.status_code != 200:
                 raise DumperException("%s, %s" % (res.status_code,res.reason))
@@ -95,10 +100,11 @@ class BiothingsDumper(HTTPDumper):
                         (remotefile,remote_lastmodified,local_lastmodified))
                 return True
             else:
+                self.logger.debug("Remote file '%s' is older (remote: %s, local: %s), nothings to do" %
+                        (remotefile,remote_lastmodified,local_lastmodified))
                 return False
         else:
-            self.logger.info("Local file is newer (%s) than remote file (%s), nothing to do" % \
-                    (local_lastmodified,remote_lastmodified))
+            self.logger.info("Remote and local version ('%s') match, nothing to do" % remote_version)
             return False
 
     def create_todump_list(self, force=False, version="latest"):
@@ -111,9 +117,11 @@ class BiothingsDumper(HTTPDumper):
             # check it actually exists (if data folder was deleted by src_dump still refers to 
             # this folder, this file won't exist)
             if not os.path.exists(current_localfile):
+                self.logger.error("Local file '%s' doesn't exists" % current_localfile)
                 raise FileNotFoundError
         except (TypeError, FileNotFoundError) as e:
             # current data folder doesn't even exist
+            self.logger.error("Can't determine local file: %s" % e)
             current_localfile = None
         if current_localfile is None or self.remote_is_better(file_url,current_localfile):
             # manually get the diff meta file (ie. not using download() because we don't know the version yet,
@@ -143,7 +151,7 @@ class BiothingsDumper(HTTPDumper):
                     self.logger.info("Diff update requires version '%s' but target_backend is '%s'. Now looking for a compatible version" % (metadata["old_version"],self.target_backend.version))
                     # keep track on this version, we'll need to apply it later
                     self.apply_builds.insert(0,build_meta["metadata"]["url"])
-                    self.create_todump_list(force=force,version=metadata["old_version"])
+                    return self.create_todump_list(force=force,version=metadata["old_version"])
                 self.release = build_meta["build_version"]
                 # ok, now we can use download()
                 # we will download it again during the normal process so we can then compare
@@ -169,7 +177,9 @@ class BiothingsDumper(HTTPDumper):
                     self.to_dump.append({"remote":furl, "local":new_localfile}) 
             else:
                 # it's a full snapshot release, it always can be applied
-                raise NotImplementedError("Can't deal with update type '%s'" % build_meta["type"])
+                self.release = build_meta["build_version"]
+                new_localfile = os.path.join(self.new_data_folder,"%s.json" % self.release)
+                self.to_dump.append({"remote":file_url, "local":new_localfile})
 
             # unset this one, as it may not be pickelable (next step is "download", which
             # uses different processes and need workers to be pickled)
