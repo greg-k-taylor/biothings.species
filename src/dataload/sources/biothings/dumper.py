@@ -60,6 +60,12 @@ class BiothingsDumper(HTTPDumper):
                  self._target_backend = self.__class__.TARGET_BACKEND
         return self._target_backend
 
+    def download(self,remoteurl,localfile,headers={}):
+        res = super(BiothingsDumper,self).download(remoteurl,localfile,headers=headers)
+        # use S3 metadata to set local mtime
+        lastmodified = int(res.headers["x-amz-meta-lastmodified"])
+        os.utime(localfile, (lastmodified, lastmodified))
+
     def load_remote_json(self,url):
         res = self.client.get(url)
         if res.status_code != 200:
@@ -104,7 +110,7 @@ class BiothingsDumper(HTTPDumper):
                         (remotefile,remote_lastmodified,local_lastmodified))
                 return False
         else:
-            self.logger.info("Remote and local version ('%s') match, nothing to do" % remote_version)
+            self.logger.info("Remote and local versions (%s) match, nothing to do" % remote_version)
             return False
 
     def create_todump_list(self, force=False, version="latest"):
@@ -112,8 +118,11 @@ class BiothingsDumper(HTTPDumper):
         self.logger.info("Dumping version '%s'" % version)
         file_url = self.__class__.SRC_URL % (self.__class__.BIOTHINGS_APP,version)
         filename = os.path.basename(self.__class__.SRC_URL)
+        # if "latest", we compare current json file we have (because we don't know what's behind latest)
+        # otherwise json file should match version explicitely in current folder.
+        version = version == "latest" and self.current_release or version
         try:
-            current_localfile = os.path.join(self.current_data_folder,"%s.json" % self.current_release)
+            current_localfile = os.path.join(self.current_data_folder,"%s.json" % version)
             # check it actually exists (if data folder was deleted by src_dump still refers to 
             # this folder, this file won't exist)
             if not os.path.exists(current_localfile):
@@ -123,7 +132,7 @@ class BiothingsDumper(HTTPDumper):
             # current data folder doesn't even exist
             self.logger.error("Can't determine local file: %s" % e)
             current_localfile = None
-        if current_localfile is None or self.remote_is_better(file_url,current_localfile):
+        if force or current_localfile is None or self.remote_is_better(file_url,current_localfile):
             # manually get the diff meta file (ie. not using download() because we don't know the version yet,
             # it's in the diff meta
             self.logger.info("file url : %s" % file_url)
@@ -142,13 +151,19 @@ class BiothingsDumper(HTTPDumper):
                 metadata = self.load_remote_json(build_meta["metadata"]["url"])
                 if not metadata:
                     raise DumperException("Can't get metadata information about version '%s' (url is wrong ? '%s')" % \
-                            (verison,build_meta["metadata"]["url"]))
+                            (version,build_meta["metadata"]["url"]))
                 # old version contains the compatible version for which we can apply the diff
                 # let's compare...
                 if self.target_backend.version == metadata["old_version"]:
                     self.logger.info("Diff update version '%s' is compatible with current version, apply update" % metadata["old_version"])
                 else:
                     self.logger.info("Diff update requires version '%s' but target_backend is '%s'. Now looking for a compatible version" % (metadata["old_version"],self.target_backend.version))
+                    # TODO: currently, it's applying recursively, not even if it's a good idea
+                    # because we'd need to mix dumper and uploader processes together, orchestrate them
+                    # which can be tricky. If we just let dumper and uploader works on their own, and
+                    # kind of force dumper to check more regularly when we know we have more than
+                    # one update to go through, we would respect dumper/uploade decoupling and things
+                    # we would keep things simple (it'd be a little bit longer though)
                     # keep track on this version, we'll need to apply it later
                     self.apply_builds.insert(0,build_meta["metadata"]["url"])
                     return self.create_todump_list(force=force,version=metadata["old_version"])
