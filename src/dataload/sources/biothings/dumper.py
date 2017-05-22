@@ -38,7 +38,7 @@ class BiothingsDumper(HTTPDumper):
     #SCHEDULE = "0 9 * * *"
 
     # what backend the dumper should work with. Must be defined before instantiation
-    # (can be an instance or a partial() returning an instance
+    # (can be an instance or a partial() returning an instance)
     TARGET_BACKEND = None
 
     # TODO: should we ensure ARCHIVE is always true ?
@@ -63,7 +63,9 @@ class BiothingsDumper(HTTPDumper):
     def download(self,remoteurl,localfile,headers={}):
         res = super(BiothingsDumper,self).download(remoteurl,localfile,headers=headers)
         # use S3 metadata to set local mtime
-        lastmodified = int(res.headers["x-amz-meta-lastmodified"])
+        # we add 1 second to make sure we wouldn't download remoteurl again
+        # because remote is older by just a few milliseconds
+        lastmodified = int(res.headers["x-amz-meta-lastmodified"]) + 1
         os.utime(localfile, (lastmodified, lastmodified))
 
     def load_remote_json(self,url):
@@ -81,16 +83,20 @@ class BiothingsDumper(HTTPDumper):
         remote_dat = self.load_remote_json(remotefile)
         if not remote_dat:
             # we didn't get any json dat, which is weird, anyway remote is not better...
+            self.logger.info("Couldn't find any build metadata at url '%s'" % remotefile)
             return False
         remote_version = remote_dat["build_version"]
-        # local version can be taken from backend, and it None (starting from scratch)
-        # from src_dump (meaning we downloaded it but we did not apply it)
-        local_version = self.target_backend.version or self.current_release
-        self.logger.info("rmeove %s local %s" % (remote_version,local_version))
+        local_dat = json.load(open(localfile))
+        local_version = local_dat["build_version"]
+        self.logger.info("Local version is '%s', remote version is '%s'" % (local_version,remote_version))
         # local_version None means we're starting from scratch.
         if local_version is None:
+            self.logger.info("No local version found, we need to download from remote")
             return True
-        if remote_version != local_version:
+        elif remote_version != local_version:
+            self.logger.info("Remote and local versions are different, we need to download from remote")
+            return True
+        else:
             # check the timestamp (maybe files were previously downloaded but not applied,
             # ie. version wasn't increased)
             # convert all in GMT to easily compare
@@ -102,16 +108,13 @@ class BiothingsDumper(HTTPDumper):
             # S3 already returns last-modified in utc/gmt
             remote_lastmodified = datetime.datetime.utcfromtimestamp(int(res.headers["x-amz-meta-lastmodified"]))
             if remote_lastmodified > local_lastmodified:
-                self.logger.debug("Remote file '%s' is newer (remote: %s, local: %s)" %
+                self.logger.debug("Remote file '%s' is newer (remote: %s, local: %s), we need to download from remote" %
                         (remotefile,remote_lastmodified,local_lastmodified))
                 return True
             else:
-                self.logger.debug("Remote file '%s' is older (remote: %s, local: %s), nothings to do" %
+                self.logger.debug("Remote file '%s' is older (remote: %s, local: %s), nothing to do" %
                         (remotefile,remote_lastmodified,local_lastmodified))
                 return False
-        else:
-            self.logger.info("Remote and local versions (%s) match, nothing to do" % remote_version)
-            return False
 
     def create_todump_list(self, force=False, version="latest"):
         assert self.__class__.BIOTHINGS_APP, "BIOTHINGS_APP class attribute is not set"
@@ -126,16 +129,16 @@ class BiothingsDumper(HTTPDumper):
             # check it actually exists (if data folder was deleted by src_dump still refers to 
             # this folder, this file won't exist)
             if not os.path.exists(current_localfile):
-                self.logger.error("Local file '%s' doesn't exists" % current_localfile)
+                self.logger.error("Local file '%s' doesn't exist" % current_localfile)
                 raise FileNotFoundError
         except (TypeError, FileNotFoundError) as e:
             # current data folder doesn't even exist
-            self.logger.error("Can't determine local file: %s" % e)
             current_localfile = None
+        self.logger.info("Local file: %s" % current_localfile)
+        self.logger.info("Remote url : %s" % file_url)
         if force or current_localfile is None or self.remote_is_better(file_url,current_localfile):
             # manually get the diff meta file (ie. not using download() because we don't know the version yet,
             # it's in the diff meta
-            self.logger.info("file url : %s" % file_url)
             build_meta = self.load_remote_json(file_url)
             if not build_meta:
                 raise Exception("Can't get remote build information about version '%s' (url was '%s')" % \
