@@ -28,6 +28,11 @@ from databuild.mapper import HasGeneMapper
 from databuild.builder import TaxonomyDataBuilder
 from dataindex.indexer import TaxonomyIndexer 
 
+differ_manager = differ.DifferManager(job_manager=jmanager)
+differ_manager.configure()
+syncer_manager = syncer.SyncerManager(job_manager=jmanager)
+syncer_manager.configure()
+
 dmanager = dumper.DumperManager(job_manager=jmanager)
 dmanager.register_sources(dataload.__sources__)
 dmanager.schedule_all()
@@ -38,7 +43,7 @@ from biothings.utils.es import ESIndexer
 from biothings.utils.backend import DocESBackend
 BiothingsDumper.BIOTHINGS_APP = "t.biothings.io"
 idxr = ESIndexer(index=config.ES_INDEX_NAME,doc_type=config.ES_DOC_TYPE,es_host=config.ES_HOST)
-partial_backend = partial(DocESBackend,idxr,)
+partial_backend = partial(DocESBackend,idxr)
 BiothingsDumper.TARGET_BACKEND = partial_backend
 dmanager.register_classes([BiothingsDumper])
 
@@ -49,6 +54,8 @@ umanager.register_sources(dataload.__sources__)
 # this uploader will use dumped data to update an ES index
 from dataload.sources.biothings import BiothingsUploader
 BiothingsUploader.TARGET_BACKEND = partial_backend
+partial_syncer = partial(syncer_manager.sync,"es")
+BiothingsUploader.SYNCER_FUNC = partial_syncer
 BiothingsUploader.AUTO_PURGE_INDEX = True # because we believe
 umanager.register_classes([BiothingsUploader])
 umanager.poll()
@@ -61,11 +68,6 @@ bmanager = builder.BuilderManager(
         poll_schedule="* * * * * */10")
 bmanager.configure()
 bmanager.poll()
-
-differ_manager = differ.DifferManager(job_manager=jmanager)
-differ_manager.configure()
-syncer_manager = syncer.SyncerManager(job_manager=jmanager)
-syncer_manager.configure()
 
 pindexer = partial(TaxonomyIndexer,es_host=config.ES_HOST)
 index_manager = indexer.IndexerManager(pindexer=pindexer,job_manager=jmanager)

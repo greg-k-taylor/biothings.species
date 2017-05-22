@@ -13,9 +13,13 @@ class BiothingsUploader(uploader.BaseSourceUploader):
 
     name = "biothings"
 
-    # what backend the dumper should work with. Must be defined before instantiation
-    # (can be an instance or a partial() returning an instance
+    # Specify the backend this uploader should work with. Must be defined before instantiation
+    # (can be an instance or a partial() returning an instance)
     TARGET_BACKEND = None
+
+    # Specify the syncer function this uploader will use to apply diff
+    # (can be an instance or a partial() returning an instance)
+    SYNCER_FUNC = None
 
     # should we delete index before restoring snapshot if index already exist ?
     AUTO_PURGE_INDEX = False
@@ -24,6 +28,7 @@ class BiothingsUploader(uploader.BaseSourceUploader):
     def __init__(self, *args, **kwargs):
         super(BiothingsUploader,self).__init__(*args,**kwargs)
         self._target_backend = None
+        self._syncer_func = None
 
     @property
     def target_backend(self):
@@ -34,6 +39,13 @@ class BiothingsUploader(uploader.BaseSourceUploader):
                  self._target_backend = self.__class__.TARGET_BACKEND
             assert type(self._target_backend) == DocESBackend, "Only ElasticSearch backend is supported (got %s)" % type(self._target_backend)
         return self._target_backend
+
+    @property
+    def syncer_func(self):
+        if not self._syncer_func:
+            self._syncer_func = self.__class__.SYNCER_FUNC
+        print("sm= %s" % self._syncer_func)
+        return self._syncer_func
 
     @asyncio.coroutine
     def update_data(self, batch_size, job_manager):
@@ -50,9 +62,9 @@ class BiothingsUploader(uploader.BaseSourceUploader):
         if build_meta["type"] == "full":
             return self.restore_snapshot(build_meta,job_manager=job_manager)
         elif build_meta["type"] == "incremental":
-            self.apply_diff(build_meta)
+            self.apply_diff(build_meta,job_manager=job_manager)
 
-    def restore_snapshot(self,build_meta, job_manager):
+    def restore_snapshot(self,build_meta, job_manager, **kwargs):
         idxr = self.target_backend.target_esidxer
         # first check if snapshot repo exists
         repo_name, repo_settings = list(build_meta["metadata"]["repository"].items())[0]
@@ -79,10 +91,10 @@ class BiothingsUploader(uploader.BaseSourceUploader):
         pinfo["step"] = "restore"
         pinfo["description"] = snapshot_name
 
-        def get_status():
+        def get_status_info():
             try:
-                res = idxr.get_restore_status(snapshot_name)
-                return res["status"]
+                res = idxr.get_restore_status(idxr._index)
+                return res
             except Exception as e:
                 # somethng went wrong, report as failure
                 return "FAILED %s" % e
@@ -94,23 +106,30 @@ class BiothingsUploader(uploader.BaseSourceUploader):
                 self.logger.error("Error while lauching restore: %s" % e)
                 raise e
 
-        self.logger.info("Restoring snapshot '%s' on host '%s'" % (snapshot_name,idxr.es_host))
+        self.logger.info("Restoring snapshot '%s' to index '%s' on host '%s'" % (snapshot_name,idxr._index,idxr.es_host))
         job = yield from job_manager.defer_to_thread(pinfo,
-                partial(idxr.restore,repo_name,snapshot_name,purge=self.__class__.AUTO_PURGE_INDEX))
+                partial(idxr.restore,repo_name,snapshot_name,idxr._index,
+                    purge=self.__class__.AUTO_PURGE_INDEX))
         job.add_done_callback(restore_launched)
         yield from job
         while True:
-            state = get_status()
-            if state in ["INIT","IN_PROGRESS"]:
+            status_info = get_status_info()
+            status = status_info["status"]
+            self.logger.info("Recovery status for index '%s': %s" % (idxr._index,status_info))
+            if status in ["INIT","IN_PROGRESS"]:
                 yield from asyncio.sleep(getattr(btconfig,"MONITOR_SNAPSHOT_DELAY",60))
             else:
-                if state == "DONE":
-                    self.logger.info("Snapshot '%s' successfully restored (host: '%s')" % \
-                            (snapshot_name,idxr.es_host),extra={"notify":True})
+                if status == "DONE":
+                    self.logger.info("Snapshot '%s' successfully restored to index '%s' (host: '%s')" % \
+                            (snapshot_name,idxr._index,idxr.es_host),extra={"notify":True})
                 else:
-                    e = uploader.ResourceError("Restore failed for snapshot '%s', state: %s" % (snapshot_name,state))
-                    self.logger.error("Failed restoring snaphost '%s' on host '%s': %s" % \
-                        (snapshot_name,idxr.es_host,e))
+                    e = uploader.ResourceError("Failed to restore snapshot '%s' on index '%s', status: %s" % \
+                            (snapshot_name,idxr._index,status))
+                    self.logger.error(e)
                     raise e
                 break
+
+    def apply_diff(self, build_meta, job_manager, **kwargs):
+        self.logger.info("Applying incremental update from diff folder: %s" % self.data_folder)
+        self.syncer_func(diff_folder=self.data_folder)
 
