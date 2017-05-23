@@ -157,7 +157,7 @@ class BiothingsDumper(HTTPDumper):
                             (version,build_meta["metadata"]["url"]))
                 # old version contains the compatible version for which we can apply the diff
                 # let's compare...
-                if self.target_backend.version == metadata["old_version"]:
+                if self.target_backend.version == metadata["old"]["version"]:
                     self.logger.info("Diff update version '%s' is compatible with current version, apply update" % metadata["old_version"])
                 else:
                     self.logger.info("Diff update requires version '%s' but target_backend is '%s'. Now looking for a compatible version" % (metadata["old_version"],self.target_backend.version))
@@ -169,8 +169,8 @@ class BiothingsDumper(HTTPDumper):
                     # we would keep things simple (it'd be a little bit longer though)
                     # keep track on this version, we'll need to apply it later
                     self.apply_builds.insert(0,build_meta["metadata"]["url"])
-                    return self.create_todump_list(force=force,version=metadata["old_version"])
-                self.release = build_meta["build_version"]
+                    return self.create_todump_list(force=force,version=metadata["old"]["version"])
+                self.release = build_meta["_meta"]["build_version"]
                 # ok, now we can use download()
                 # we will download it again during the normal process so we can then compare
                 # when we have new data release
@@ -182,7 +182,7 @@ class BiothingsDumper(HTTPDumper):
                 new_localfile = os.path.join(self.new_data_folder,os.path.basename(metadata_url))
                 self.download(metadata_url,new_localfile)
                 metadata = json.load(open(new_localfile))
-                for md5_fname in metadata["diff_files"]:
+                for md5_fname in metadata["diff"]["files"]:
                     fname = md5_fname["name"]
                     p = urlparse(fname)
                     if not p.scheme:
@@ -195,7 +195,7 @@ class BiothingsDumper(HTTPDumper):
                     self.to_dump.append({"remote":furl, "local":new_localfile}) 
             else:
                 # it's a full snapshot release, it always can be applied
-                self.release = build_meta["build_version"]
+                self.release = build_meta["_meta"]["build_version"]
                 new_localfile = os.path.join(self.new_data_folder,"%s.json" % self.release)
                 self.to_dump.append({"remote":file_url, "local":new_localfile})
 
@@ -208,7 +208,7 @@ class BiothingsDumper(HTTPDumper):
         if build_meta["type"] == "incremental":
             self.logger.info("Checking md5sum for files in '%s'" % self.new_data_folder) 
             metadata = json.load(open(os.path.join(self.new_data_folder,"metadata.json")))
-            for md5_fname in metadata["diff_files"]:
+            for md5_fname in metadata["diff"]["files"]:
                 spec_md5 = md5_fname["md5sum"]
                 fname = md5_fname["name"]
                 compute_md5 = md5sum(os.path.join(self.new_data_folder,fname))
