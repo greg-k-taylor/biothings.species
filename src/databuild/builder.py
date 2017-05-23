@@ -30,5 +30,24 @@ class TaxonomyDataBuilder(DataBuilder):
         for k in keys:
             self.target_backend.target_collection.ensure_index(k)
 
-
+    def get_metadata(self, sources, job_manager):
+        self.logger.info("Computing metadata...")
+        # we want to compute it from scratch
+        meta = {"__REPLACE__":True}
+        col = self.target_backend.target_collection
+        # disctint count of taxid
+        cur = col.aggregate([{"$group": {"_id": "distinct_taxid", "count": {"$addToSet": "$taxid"}}},
+            {"$project":{"count":{"$size":"$count"}}}])
+        res = list(cur)
+        assert len(res) == 1
+        distinct_taxid = res[0]["count"]
+        meta["unique taxonomy ids"] = distinct_taxid
+        # count per rank
+        cur = col.aggregate(pipeline=[{"$group": {"_id": "$rank", "count": { "$sum": 1 }}}])
+        res = list(cur)
+        meta["distribution of taxonomy ids by rank"] = {}
+        for rank_info in res:
+            meta["distribution of taxonomy ids by rank"].update({rank_info["_id"] : rank_info["count"]})
+        self.logger.info("Metadata: %s" % meta)
+        return meta
 
