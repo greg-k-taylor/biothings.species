@@ -25,7 +25,7 @@ class TaxonomyDataBuilder(DataBuilder):
             storage.process(docs,batch_size)
 
         # add indices used to create metadata stats
-        keys = ["lineage","taxid","parent_taxid"]
+        keys = ["rank","taxid"]
         self.logger.info("Creating indices on %s" % repr(keys))
         for k in keys:
             self.target_backend.target_collection.ensure_index(k)
