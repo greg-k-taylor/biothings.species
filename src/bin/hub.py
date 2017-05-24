@@ -93,11 +93,11 @@ COMMANDS = {
         "dim" : differ_manager,
         "diff" : partial(differ_manager.diff,"jsondiff"),
         "upload_diff" : differ_manager.upload_diff,
-        "sc_diff" : partial(differ_manager.diff,"jsondiff-selfcontained"),
+        "scdiff" : partial(differ_manager.diff,"jsondiff-selfcontained"),
         "report": differ_manager.diff_report,
         # indexing commands
         "im" : index_manager,
-        "index" : partial(index_manager.index,"taxonomy"),
+        "index" : index_manager.index,
         "snapshot" : index_manager.snapshot,
         ## admin/advanced
         #"loop" : loop,
