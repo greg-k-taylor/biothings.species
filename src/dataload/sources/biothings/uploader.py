@@ -62,7 +62,7 @@ class BiothingsUploader(uploader.BaseSourceUploader):
         if build_meta["type"] == "full":
             return self.restore_snapshot(build_meta,job_manager=job_manager)
         elif build_meta["type"] == "incremental":
-            self.apply_diff(build_meta,job_manager=job_manager)
+            return self.apply_diff(build_meta,job_manager=job_manager)
 
     def restore_snapshot(self,build_meta, job_manager, **kwargs):
         idxr = self.target_backend.target_esidxer
@@ -131,5 +131,5 @@ class BiothingsUploader(uploader.BaseSourceUploader):
 
     def apply_diff(self, build_meta, job_manager, **kwargs):
         self.logger.info("Applying incremental update from diff folder: %s" % self.data_folder)
-        self.syncer_func(diff_folder=self.data_folder)
+        return self.syncer_func(diff_folder=self.data_folder)
 

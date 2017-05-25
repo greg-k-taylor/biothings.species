@@ -7,6 +7,12 @@ from functools import partial
 import config, biothings
 biothings.config_for_app(config)
 
+import logging
+# shut some mouths...
+logging.getLogger("elasticsearch").setLevel(logging.ERROR)
+logging.getLogger("urllib3").setLevel(logging.ERROR)
+logging.getLogger("requests").setLevel(logging.ERROR)
+
 from biothings.utils.manager import JobManager
 loop = asyncio.get_event_loop()
 process_queue = concurrent.futures.ProcessPoolExecutor(max_workers=config.HUB_MAX_WORKERS)
@@ -54,7 +60,8 @@ umanager.register_sources(dataload.__sources__)
 # this uploader will use dumped data to update an ES index
 from dataload.sources.biothings import BiothingsUploader
 BiothingsUploader.TARGET_BACKEND = partial_backend
-partial_syncer = partial(syncer_manager.sync,"es")
+# syncer will work on index used in web part
+partial_syncer = partial(syncer_manager.sync,"es",target_backend=config.ES_INDEX_NAME)
 BiothingsUploader.SYNCER_FUNC = partial_syncer
 BiothingsUploader.AUTO_PURGE_INDEX = True # because we believe
 umanager.register_classes([BiothingsUploader])

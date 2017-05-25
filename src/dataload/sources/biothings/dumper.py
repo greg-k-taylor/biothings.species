@@ -48,7 +48,6 @@ class BiothingsDumper(HTTPDumper):
     def __init__(self, *args, **kwargs):
         super(BiothingsDumper,self).__init__(*args,**kwargs)
         # list of build_version to download/apply, in order
-        self.apply_builds = []
         self._target_backend = None
 
     @property
@@ -89,6 +88,17 @@ class BiothingsDumper(HTTPDumper):
         local_dat = json.load(open(localfile))
         local_version = local_dat["build_version"]
         self.logger.info("Local version is '%s', remote version is '%s'" % (local_version,remote_version))
+        # are we in sync between what's in src_dump (locafile) and actual backend's version ?
+        if self.target_backend.version is None:
+            self.logger.info("No backend version, but we have local update files, get data from remote")
+            return True
+        if local_version != self.target_backend.version:
+            if local_version < self.target_backend.version:
+                self.logger.info("Local version is '%s' but backend's version is '%s', " + \
+                        "backend is more recent than local update files, it seems we need to " + \
+                        "back in time..." % (local_version,self.target_backend.version))
+                return True
+
         # local_version None means we're starting from scratch.
         if local_version is None:
             self.logger.info("No local version found, we need to download from remote")
@@ -115,6 +125,24 @@ class BiothingsDumper(HTTPDumper):
                 self.logger.debug("Remote file '%s' is older (remote: %s, local: %s), nothing to do" %
                         (remotefile,remote_lastmodified,local_lastmodified))
                 return False
+
+    def choose_best_version(self,versions):
+        """
+        Out of all compatible versions, choose the best:
+        1. choose incremental vs. full according to preferences
+        2. version must be the highest (most up-to-date)
+        """
+        # 1st pass
+        # TODO: implemente inc/full preferences, for now prefer incremental
+        preferreds = [v for v in versions if "." in v]
+        if preferreds:
+            self.logger.info("Preferred versions (according to preferences): %s" % preferreds)
+            versions = preferreds
+        # we can directly take the max because:
+        # - version is a string
+        # - format if YYYYMMDD 
+        # - when incremental, it's always old_version.new_version
+        return max(versions)
 
     def create_todump_list(self, force=False, version="latest"):
         assert self.__class__.BIOTHINGS_APP, "BIOTHINGS_APP class attribute is not set"
@@ -151,26 +179,40 @@ class BiothingsDumper(HTTPDumper):
             #   * if compatible, we need to download metadata file which contains the list of files
             #     we need to download and then trigger a sync using those diff files
             if build_meta["type"] == "incremental":
-                metadata = self.load_remote_json(build_meta["metadata"]["url"])
-                if not metadata:
-                    raise DumperException("Can't get metadata information about version '%s' (url is wrong ? '%s')" % \
-                            (version,build_meta["metadata"]["url"]))
-                # old version contains the compatible version for which we can apply the diff
+                # require_version contains the compatible version for which we can apply the diff
                 # let's compare...
-                if self.target_backend.version == metadata["old"]["version"]:
-                    self.logger.info("Diff update version '%s' is compatible with current version, apply update" % metadata["old_version"])
+                if self.target_backend.version == build_meta["require_version"]:
+                    self.logger.info("Diff update version '%s' is compatible with current version, download update" % \
+                            build_meta["require_version"])
                 else:
-                    self.logger.info("Diff update requires version '%s' but target_backend is '%s'. Now looking for a compatible version" % (metadata["old_version"],self.target_backend.version))
-                    # TODO: currently, it's applying recursively, not even if it's a good idea
-                    # because we'd need to mix dumper and uploader processes together, orchestrate them
-                    # which can be tricky. If we just let dumper and uploader works on their own, and
+                    self.logger.info("Diff update requires version '%s' but target_backend is '%s'" % \
+                            (build_meta["require_version"],self.target_backend.version))
+                    # TODO: we could keep track of what's needed to update, recursively. But
+                    # note sure if it's a good idea because we'd need to mix dumper and
+                    # uploader processes together, orchestrate them which can be tricky.
+                    # If we just let dumper and uploader works on their own, and
                     # kind of force dumper to check more regularly when we know we have more than
                     # one update to go through, we would respect dumper/uploade decoupling and things
                     # we would keep things simple (it'd be a little bit longer though)
                     # keep track on this version, we'll need to apply it later
-                    self.apply_builds.insert(0,build_meta["metadata"]["url"])
-                    return self.create_todump_list(force=force,version=metadata["old"]["version"])
-                self.release = build_meta["_meta"]["build_version"]
+                    self.logger.info("Now looking for a compatible version")
+                    # by default we'll check directly the required version
+                    required_version = build_meta["require_version"]
+                    versions_url = self.__class__.SRC_URL % (self.__class__.BIOTHINGS_APP,"versions")
+                    avail_versions = self.load_remote_json(versions_url)
+                    if not avail_versions:
+                        self.logger.error("Can't find versions information from URL %s, will try '%s'" % \
+                                (versions_url,required_version))
+                    else:
+                        # if any of available versions end with "require_version", then it means it's compatible
+                        compatibles = [v for v in avail_versions if v.endswith(build_meta["require_version"])]
+                        self.logger.info("Compatible versions from which we can apply this update: %s" % compatibles)
+                        best_version = self.choose_best_version(compatibles)
+                        self.logger.info("Best version found: '%s'" % best_version)
+                        required_version = best_version
+                    # let's get what we need
+                    return self.create_todump_list(force=force,version=required_version)
+                self.release = build_meta["build_version"]
                 # ok, now we can use download()
                 # we will download it again during the normal process so we can then compare
                 # when we have new data release
@@ -195,7 +237,7 @@ class BiothingsDumper(HTTPDumper):
                     self.to_dump.append({"remote":furl, "local":new_localfile}) 
             else:
                 # it's a full snapshot release, it always can be applied
-                self.release = build_meta["_meta"]["build_version"]
+                self.release = build_meta["build_version"]
                 new_localfile = os.path.join(self.new_data_folder,"%s.json" % self.release)
                 self.to_dump.append({"remote":file_url, "local":new_localfile})
 
