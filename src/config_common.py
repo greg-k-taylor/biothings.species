@@ -105,3 +105,10 @@ MONITOR_SNAPSHOT_DELAY = 10
 
 # compressed cache files
 CACHE_FORMAT = "xz"
+
+# Hub environment (like, prod, dev, ...)
+# Used to generate remote metadata file, like "latest.json", "versions.json"
+# If non-empty, this constant will be used to generate those url, as a prefix 
+# with "-" between. So, if "dev", we'll have "dev-latest.json", etc...
+# "" means production
+HUB_ENV = ""

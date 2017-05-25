@@ -5,10 +5,12 @@ from functools import partial
 import biothings, config
 biothings.config_for_app(config)
 
-from config import DATA_ARCHIVE_ROOT
+from config import DATA_ARCHIVE_ROOT, HUB_ENV
 from biothings.dataload.dumper import HTTPDumper, DumperException
 from biothings.utils.common import gunzipall, md5sum
 
+LATEST = HUB_ENV and "%s-latest" % HUB_ENV or "latest"
+VERSIONS = HUB_ENV and "%s-versions" % HUB_ENV or "versions"
 
 class BiothingsDumper(HTTPDumper):
     """
@@ -84,9 +86,19 @@ class BiothingsDumper(HTTPDumper):
             # we didn't get any json dat, which is weird, anyway remote is not better...
             self.logger.info("Couldn't find any build metadata at url '%s'" % remotefile)
             return False
-        remote_version = remote_dat["build_version"]
+        orig_remote_version = remote_dat["build_version"]
         local_dat = json.load(open(localfile))
-        local_version = local_dat["build_version"]
+        orig_local_version = local_dat["build_version"]
+        # if diff version, we want to compatr the right part (destination version)
+        # local: "3.4", backend: "4". It's actually the same (4==4)
+        local_version = orig_local_version.split(".")[-1]
+        remote_version = orig_remote_version.split(".")[-1]
+        if remote_version != orig_remote_version:
+            self.logger.debug("Remote version '%s' converted to '%s' " % (orig_remote_version,remote_version) + \
+                    "(version that will be reached once incremental update has been applied)")
+        if local_version != orig_local_version:
+            self.logger.debug("Local version '%s' converted to '%s' " % (orig_local_version,local_version) + \
+                    "(version that had been be reached using incremental update files)")
         self.logger.info("Local version is '%s', remote version is '%s'" % (local_version,remote_version))
         # are we in sync between what's in src_dump (locafile) and actual backend's version ?
         if self.target_backend.version is None:
@@ -94,9 +106,10 @@ class BiothingsDumper(HTTPDumper):
             return True
         if local_version != self.target_backend.version:
             if local_version < self.target_backend.version:
-                self.logger.info("Local version is '%s' but backend's version is '%s', " + \
+                self.logger.info("Local version is '%s' but backend's " % local_version + \
+                        "version is '%s', " % self.target_backend.version + \
                         "backend is more recent than local update files, it seems we need to " + \
-                        "back in time..." % (local_version,self.target_backend.version))
+                        "go back in time...")
                 return True
 
         # local_version None means we're starting from scratch.
@@ -144,7 +157,7 @@ class BiothingsDumper(HTTPDumper):
         # - when incremental, it's always old_version.new_version
         return max(versions)
 
-    def create_todump_list(self, force=False, version="latest"):
+    def create_todump_list(self, force=False, version=LATEST):
         assert self.__class__.BIOTHINGS_APP, "BIOTHINGS_APP class attribute is not set"
         self.logger.info("Dumping version '%s'" % version)
         file_url = self.__class__.SRC_URL % (self.__class__.BIOTHINGS_APP,version)
@@ -198,7 +211,7 @@ class BiothingsDumper(HTTPDumper):
                     self.logger.info("Now looking for a compatible version")
                     # by default we'll check directly the required version
                     required_version = build_meta["require_version"]
-                    versions_url = self.__class__.SRC_URL % (self.__class__.BIOTHINGS_APP,"versions")
+                    versions_url = self.__class__.SRC_URL % (self.__class__.BIOTHINGS_APP,VERSIONS)
                     avail_versions = self.load_remote_json(versions_url)
                     if not avail_versions:
                         self.logger.error("Can't find versions information from URL %s, will try '%s'" % \
