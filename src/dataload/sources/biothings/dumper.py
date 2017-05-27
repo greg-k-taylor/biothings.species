@@ -79,16 +79,27 @@ class BiothingsDumper(HTTPDumper):
         except json.JSONDecodeError:
             return None
 
+    def compare_remote_local(self,remote_version,local_version,orig_remote_version,orig_local_version):
+            # we need have to some data locally. do we already have ?
+            if remote_version > local_version:
+                self.logger.info("Remote version '%s' is more recent than local version '%s', download needed" % \
+                        (orig_remote_version,orig_local_version))
+                return True
+            else:
+                self.logger.info("Remote version '%s' is the same as " % orig_remote_version + \
+                        "local version '%s'. " % orig_local_version + "Dump is waiting to be applied")                      
+                return False
+
     def remote_is_better(self,remotefile,localfile):
-        # first check remote version, if not equals to our version, update is needed
-        remote_dat = self.load_remote_json(remotefile)
+        remote_dat = self.load_remote_json(remotefile) 
         if not remote_dat:
-            # we didn't get any json dat, which is weird, anyway remote is not better...
             self.logger.info("Couldn't find any build metadata at url '%s'" % remotefile)
             return False
         orig_remote_version = remote_dat["build_version"]
+
         local_dat = json.load(open(localfile))
         orig_local_version = local_dat["build_version"]
+
         # if diff version, we want to compatr the right part (destination version)
         # local: "3.4", backend: "4". It's actually the same (4==4)
         local_version = orig_local_version.split(".")[-1]
@@ -99,45 +110,20 @@ class BiothingsDumper(HTTPDumper):
         if local_version != orig_local_version:
             self.logger.debug("Local version '%s' converted to '%s' " % (orig_local_version,local_version) + \
                     "(version that had been be reached using incremental update files)")
-        self.logger.info("Local version is '%s', remote version is '%s'" % (local_version,remote_version))
-        # are we in sync between what's in src_dump (locafile) and actual backend's version ?
-        if self.target_backend.version is None:
-            self.logger.info("No backend version, but we have local update files, get data from remote")
-            return True
-        if local_version != self.target_backend.version:
-            if local_version < self.target_backend.version:
-                self.logger.info("Local version is '%s' but backend's " % local_version + \
-                        "version is '%s', " % self.target_backend.version + \
-                        "backend is more recent than local update files, it seems we need to " + \
-                        "go back in time...")
-                return True
 
-        # local_version None means we're starting from scratch.
-        if local_version is None:
-            self.logger.info("No local version found, we need to download from remote")
-            return True
-        elif remote_version != local_version:
-            self.logger.info("Remote and local versions are different, we need to download from remote")
-            return True
+        backend_version = self.target_backend.version
+        if backend_version == None:
+            self.logger.info("No backend version found")
+            return self.compare_remote_local(remote_version,local_version,
+                    orig_remote_version,orig_local_version)
+        elif remote_version > backend_version:
+            self.logger.info("Remote version '%s' is more recent than backend version '%s'" % \
+                    (orig_remote_version,backend_version))
+            return self.compare_remote_local(remote_version,local_version,
+                    orig_remote_version,orig_local_version)
         else:
-            # check the timestamp (maybe files were previously downloaded but not applied,
-            # ie. version wasn't increased)
-            # convert all in GMT to easily compare
-            res = os.stat(localfile) # local file in local time
-            local_lastmodified = datetime.datetime.utcfromtimestamp(res.st_mtime) # local file already in gmt time
-            res = self.client.get(remotefile) # GET to follow redirection and get proper headers
-            if res.status_code != 200:
-                raise DumperException("%s, %s" % (res.status_code,res.reason))
-            # S3 already returns last-modified in utc/gmt
-            remote_lastmodified = datetime.datetime.utcfromtimestamp(int(res.headers["x-amz-meta-lastmodified"]))
-            if remote_lastmodified > local_lastmodified:
-                self.logger.debug("Remote file '%s' is newer (remote: %s, local: %s), we need to download from remote" %
-                        (remotefile,remote_lastmodified,local_lastmodified))
-                return True
-            else:
-                self.logger.debug("Remote file '%s' is older (remote: %s, local: %s), nothing to do" %
-                        (remotefile,remote_lastmodified,local_lastmodified))
-                return False
+            self.logger.info("Backend version '%s' is up-to-date" % backend_version)
+            return False
 
     def choose_best_version(self,versions):
         """
@@ -172,6 +158,10 @@ class BiothingsDumper(HTTPDumper):
             if not os.path.exists(current_localfile):
                 self.logger.error("Local file '%s' doesn't exist" % current_localfile)
                 raise FileNotFoundError
+            dump_status = self.src_doc.get("download",{}).get("status")
+            if dump_status != "success":
+                self.logger.error("Found dump information but status is '%s', will ignore current dump" % dump_status)
+                raise TypeError
         except (TypeError, FileNotFoundError) as e:
             # current data folder doesn't even exist
             current_localfile = None
