@@ -13,6 +13,8 @@ logging.getLogger("elasticsearch").setLevel(logging.ERROR)
 logging.getLogger("urllib3").setLevel(logging.ERROR)
 logging.getLogger("requests").setLevel(logging.ERROR)
 
+logging.info("Using internal backend: %s" % biothings.config.CONFIG_BACKEND)
+
 from biothings.utils.manager import JobManager
 loop = asyncio.get_event_loop()
 process_queue = concurrent.futures.ProcessPoolExecutor(max_workers=config.HUB_MAX_WORKERS)
@@ -48,8 +50,8 @@ from dataload.sources.biothings import BiothingsDumper
 from biothings.utils.es import ESIndexer
 from biothings.utils.backend import DocESBackend
 BiothingsDumper.BIOTHINGS_APP = "t.biothings.io"
-idxr = ESIndexer(index=config.ES_INDEX_NAME,doc_type=config.ES_DOC_TYPE,es_host=config.ES_HOST)
-partial_backend = partial(DocESBackend,idxr)
+pidxr = partial(ESIndexer,index=config.ES_INDEX_NAME,doc_type=config.ES_DOC_TYPE,es_host=config.ES_HOST)
+partial_backend = partial(DocESBackend,pidxr)
 BiothingsDumper.TARGET_BACKEND = partial_backend
 dmanager.register_classes([BiothingsDumper])
 
