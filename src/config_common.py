@@ -79,7 +79,7 @@ QUERY_POST_TRANSFORM_KWARGS.update({'include_children': DEFAULT_FALSE_BOOL_TYPED
 # HUB VARS  #
 #############
 
-DATA_CONFIG_DATABASE = "config"                       # db containing the following (internal use)
+DATA_HUB_DB_DATABASE = "hub_config"                       # db containing the following (internal use)
 DATA_SRC_MASTER_COLLECTION = 'src_master'             # for metadata of each src collections
 DATA_SRC_DUMP_COLLECTION = 'src_dump'                 # for src data download information
 DATA_SRC_BUILD_COLLECTION = 'src_build'               # for src data build information
@@ -89,11 +89,11 @@ DATA_TARGET_MASTER_COLLECTION = 'db_master'
 
 # Internal backend. Default to mongodb
 # For now, other options are: sqlite3
-#CONFIG_BACKEND = {
+#HUB_DB_BACKEND = {
 #        "module" : "biothings.utils.sqlite3",
 #        "sqlite_db_foder" : "./db",
 #        }
-CONFIG_BACKEND = {
+HUB_DB_BACKEND = {
         "module" : "biothings.utils.mongo",
         "uri" : "mongodb://localhost:27017",
         #"uri" : "mongodb://user:passwd@localhost:27017", # mongodb std URI

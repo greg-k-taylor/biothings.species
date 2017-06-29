@@ -13,7 +13,7 @@ logging.getLogger("elasticsearch").setLevel(logging.ERROR)
 logging.getLogger("urllib3").setLevel(logging.ERROR)
 logging.getLogger("requests").setLevel(logging.ERROR)
 
-logging.info("Using internal backend: %s" % biothings.config.CONFIG_BACKEND)
+logging.info("Hub DB backend: %s" % biothings.config.HUB_DB_BACKEND)
 
 from biothings.utils.manager import JobManager
 loop = asyncio.get_event_loop()
