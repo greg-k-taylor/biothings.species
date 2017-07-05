@@ -93,10 +93,14 @@ DATA_TARGET_MASTER_COLLECTION = 'db_master'
 #        "module" : "biothings.utils.sqlite3",
 #        "sqlite_db_foder" : "./db",
 #        }
+#HUB_DB_BACKEND = {
+#        "module" : "biothings.utils.mongo",
+#        "uri" : "mongodb://localhost:27017",
+#        #"uri" : "mongodb://user:passwd@localhost:27017", # mongodb std URI
+#        }
 HUB_DB_BACKEND = {
-        "module" : "biothings.utils.mongo",
-        "uri" : "mongodb://localhost:27017",
-        #"uri" : "mongodb://user:passwd@localhost:27017", # mongodb std URI
+        "module" : "biothings.utils.es",
+        "host" : "localhost:9200",
         }
 
 # reporting diff results, number of IDs to consider (to avoid too much mem usage)
