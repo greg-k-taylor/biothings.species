@@ -130,3 +130,32 @@ CACHE_FORMAT = "xz"
 # with "-" between. So, if "dev", we'll have "dev-latest.json", etc...
 # "" means production
 HUB_ENV = ""
+
+########################################
+# APP-SPECIFIC CONFIGURATION VARIABLES #
+########################################
+# The following variables *must* be defined in your 
+# own application. Create a config.py file, import that config_common
+# file as:
+#
+#   from config_common import *
+#
+# then define the following variables to fit your needs. You can also override any
+# any other variables in this file as required.
+#
+# To be defined at application-level:
+
+# Individual source database connection
+DATA_SRC_SERVER = None
+DATA_SRC_PORT = None
+DATA_SRC_DATABASE = None
+DATA_SRC_SERVER_USERNAME = None
+DATA_SRC_SERVER_PASSWORD = None
+
+# Target (merged collection) database connection
+DATA_TARGET_SERVER = None
+DATA_TARGET_PORT = None
+DATA_TARGET_DATABASE = None
+DATA_TARGET_SERVER_USERNAME = None
+DATA_TARGET_SERVER_PASSWORD = None
+
