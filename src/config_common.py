@@ -98,10 +98,10 @@ DATA_TARGET_MASTER_COLLECTION = 'db_master'
 #        "uri" : "mongodb://localhost:27017",
 #        #"uri" : "mongodb://user:passwd@localhost:27017", # mongodb std URI
 #        }
-HUB_DB_BACKEND = {
-        "module" : "biothings.utils.es",
-        "host" : "localhost:9200",
-        }
+#HUB_DB_BACKEND = {
+#        "module" : "biothings.utils.es",
+#        "host" : "localhost:9200",
+#        }
 
 # reporting diff results, number of IDs to consider (to avoid too much mem usage)
 MAX_REPORTED_IDS = 1000
@@ -159,3 +159,27 @@ DATA_TARGET_DATABASE = None
 DATA_TARGET_SERVER_USERNAME = None
 DATA_TARGET_SERVER_PASSWORD = None
 
+# Hub database, defaulting to mongo, see HUB_DB_BACKEND above for more options
+# You will need to provide a validb mongodb:// URI
+HUB_DB_BACKEND = {
+        "module" : "biothings.utils.mongo",
+        "uri" : "mongodb://localhost:27017",
+        #"uri" : "mongodb://user:passwd@localhost:27017", # mongodb std URI
+        }
+
+# fill with "token", "roomid" and "from" keys
+# to broadcast message to a Hipchat room
+HIPCHAT_CONFIG = {
+        #    'token': 'abdce',
+        #    'roomid': 123456,
+        #    'from': 'hub'
+        }
+
+# Path to a folder to store all downloaded files, logs, caches, etc...
+DATA_ARCHIVE_ROOT = "/tmp"
+LOG_FOLDER = os.path.join(DATA_ARCHIVE_ROOT,'logs') # this dir must be created manually
+
+# default logger for the hub
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging
