@@ -131,55 +131,62 @@ CACHE_FORMAT = "xz"
 # "" means production
 HUB_ENV = ""
 
-########################################
-# APP-SPECIFIC CONFIGURATION VARIABLES #
-########################################
-# The following variables *must* be defined in your 
-# own application. Create a config.py file, import that config_common
-# file as:
-#
-#   from config_common import *
-#
-# then define the following variables to fit your needs. You can also override any
-# any other variables in this file as required.
-#
-# To be defined at application-level:
+# default logger for the hub
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging
 
-# Individual source database connection
-DATA_SRC_SERVER = None
-DATA_SRC_PORT = None
-DATA_SRC_DATABASE = None
-DATA_SRC_SERVER_USERNAME = None
-DATA_SRC_SERVER_PASSWORD = None
-
-# Target (merged collection) database connection
-DATA_TARGET_SERVER = None
-DATA_TARGET_PORT = None
-DATA_TARGET_DATABASE = None
-DATA_TARGET_SERVER_USERNAME = None
-DATA_TARGET_SERVER_PASSWORD = None
-
-# Hub database, defaulting to mongo, see HUB_DB_BACKEND above for more options
-# You will need to provide a validb mongodb:// URI
-HUB_DB_BACKEND = {
-        "module" : "biothings.utils.mongo",
-        "uri" : "mongodb://localhost:27017",
-        #"uri" : "mongodb://user:passwd@localhost:27017", # mongodb std URI
-        }
-
-# fill with "token", "roomid" and "from" keys
-# to broadcast message to a Hipchat room
+# If you need notifications to hipchat, fill with "token", 
+# "roomid" and "from" keys to broadcast message to a Hipchat room.
 HIPCHAT_CONFIG = {
         #    'token': 'abdce',
         #    'roomid': 123456,
         #    'from': 'hub'
         }
 
-# Path to a folder to store all downloaded files, logs, caches, etc...
-DATA_ARCHIVE_ROOT = "/tmp"
-LOG_FOLDER = os.path.join(DATA_ARCHIVE_ROOT,'logs') # this dir must be created manually
+########################################
+# APP-SPECIFIC CONFIGURATION VARIABLES #
+########################################
+# The following variables should or must be defined in your
+# own application. Create a config.py file, import that config_common
+# file as:
+#
+#   from config_common import *
+#
+# then define the following variables to fit your needs. You can also override any
+# any other variables in this file as required. Variables defined as ValueError() exceptions
+# *must* be defined
+#
+from biothings import ConfigurationError
+# To be defined at application-level:
 
-# default logger for the hub
-import logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging
+# Individual source database connection
+DATA_SRC_SERVER = ConfigurationError("Define hostname for source database")
+DATA_SRC_PORT = ConfigurationError("Define port for source database")
+DATA_SRC_DATABASE = ConfigurationError("Define name for source database")
+DATA_SRC_SERVER_USERNAME = ConfigurationError("Define username for source database connection (or None if not needed)")
+DATA_SRC_SERVER_PASSWORD = ConfigurationError("Define password for source database connection (or None if not needed)")
+
+# Target (merged collection) database connection
+DATA_TARGET_SERVER = ConfigurationError("Define hostname for target database (merged collections)")
+DATA_TARGET_PORT = ConfigurationError("Define port for target database (merged collections)")
+DATA_TARGET_DATABASE = ConfigurationError("Define name for target database (merged collections)")
+DATA_TARGET_SERVER_USERNAME = ConfigurationError("Define username for target database connection (or None if not needed)")
+DATA_TARGET_SERVER_PASSWORD = ConfigurationError("Define password for target database connection (or None if not needed)")
+
+# Hub database, defaulting to mongo, see HUB_DB_BACKEND above for more options
+# You will need to provide a validb mongodb:// URI
+HUB_DB_BACKEND = ConfigurationError("Define Hub DB connection")
+#HUB_DB_BACKEND = {
+#        "module" : "biothings.utils.mongo",
+#        "uri" : "mongodb://localhost:27017",
+#        #"uri" : "mongodb://user:passwd@localhost:27017", # mongodb std URI
+#        }
+
+# Path to a folder to store all downloaded files, logs, caches, etc...
+DATA_ARCHIVE_ROOT = ConfigurationError("Define path to folder which will contain all downloaded data, cache files, etc...")
+# this dir must be created manually
+LOG_FOLDER = ConfigurationError("Define path to folder which will contain log files")
+# Usually inside DATA_ARCHIVE_ROOT
+#LOG_FOLDER = os.path.join(DATA_ARCHIVE_ROOT,'logs')
+
