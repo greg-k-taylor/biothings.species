@@ -16,7 +16,7 @@ ES_INDEX = 'taxonomy'
 # elasticsearch document type
 ES_DOC_TYPE = 'taxon'
 # defautlt number_of_shards when create a new index
-ES_NUMBER_OF_SHARDS = 5
+#ES_NUMBER_OF_SHARDS = 5
 
 API_VERSION = 'v1'
 
