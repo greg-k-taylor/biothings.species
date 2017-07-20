@@ -5,7 +5,7 @@ from functools import partial
 from elasticsearch.exceptions import NotFoundError, TransportError
 
 from biothings import config as btconfig
-import biothings.dataload.uploader as uploader
+import biothings.hub.dataload.uploader as uploader
 from biothings.utils.backend import DocESBackend
 from biothings.utils.es import IndexerException
 

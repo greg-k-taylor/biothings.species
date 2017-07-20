@@ -55,6 +55,9 @@ HIPCHAT_CONFIG = {
         #    'from': 'hub'
         }
 
+# SSH port for hub console
+HUB_SSH_PORT = 8022
+
 # Temporarily required for biothings update hub (full/incr updates)
 ES_INDEX_NAME = 'taxonomy_current'
 ES_DOC_TYPE = 'taxon'

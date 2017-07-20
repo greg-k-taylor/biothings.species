@@ -1,8 +1,8 @@
 import os
 
-import biothings.dataload.uploader as uploader
-from biothings.databuild.builder import set_pending_to_build
-import biothings.dataload.storage as storage
+import biothings.hub.dataload.uploader as uploader
+from biothings.hub.databuild.builder import set_pending_to_build
+import biothings.hub.dataload.storage as storage
 from .parser import parse_geneinfo_taxid
 
 class GeneInfoUploader(uploader.BaseSourceUploader):

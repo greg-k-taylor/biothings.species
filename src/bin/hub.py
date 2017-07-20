@@ -27,12 +27,12 @@ jmanager = JobManager(loop,
                       )
 
 import dataload
-import biothings.dataload.uploader as uploader
-import biothings.dataload.dumper as dumper
-import biothings.databuild.builder as builder
-import biothings.databuild.differ as differ
-import biothings.databuild.syncer as syncer
-import biothings.dataindex.indexer as indexer
+import biothings.hub.dataload.uploader as uploader
+import biothings.hub.dataload.dumper as dumper
+import biothings.hub.databuild.builder as builder
+import biothings.hub.databuild.differ as differ
+import biothings.hub.databuild.syncer as syncer
+import biothings.hub.dataindex.indexer as indexer
 from databuild.mapper import HasGeneMapper
 from databuild.builder import TaxonomyDataBuilder
 from dataindex.indexer import TaxonomyIndexer 
@@ -126,7 +126,8 @@ passwords = {
 
 from biothings.utils.hub import start_server
 
-server = start_server(loop, "Species hub",passwords=passwords,port=7022,commands=COMMANDS)
+server = start_server(loop, "Species hub",passwords=passwords,
+        port=config.HUB_SSH_PORT,commands=COMMANDS)
 
 try:
     loop.run_until_complete(server)
