@@ -7,7 +7,7 @@ tornado==4.2.1
 elasticsearch>=2.0.0,<3.0.0
 
 # biothings
-git+https://github.com/SuLab/biothings.api.git@72bb5d3f297652c12b01cbd4b6325b2c1a3d2f31#egg=biothings
+git+https://github.com/biothings/biothings.api.git@76843137afa1504eab5232f8774af980e9e2033c#egg=biothings
 
 # for utils.common
 psutil
