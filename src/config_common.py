@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
-from biothings.www.settings.default import *
-from www.api.query_builder import ESQueryBuilder
-from www.api.query import ESQuery
-from www.api.transform import ESResultTransformer
-from www.api.handlers import TaxonHandler, QueryHandler, MetadataHandler, StatusHandler
+from biothings.web.settings.default import *
+from web.api.query_builder import ESQueryBuilder
+from web.api.query import ESQuery
+from web.api.transform import ESResultTransformer
+from web.api.handlers import TaxonHandler, QueryHandler, MetadataHandler, StatusHandler
 
 # *****************************************************************************
 # Elasticsearch variables
@@ -16,7 +16,7 @@ ES_INDEX = 'taxonomy'
 # elasticsearch document type
 ES_DOC_TYPE = 'taxon'
 # defautlt number_of_shards when create a new index
-ES_NUMBER_OF_SHARDS = 5
+#ES_NUMBER_OF_SHARDS = 5
 
 API_VERSION = 'v1'
 
