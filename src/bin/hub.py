@@ -45,30 +45,10 @@ syncer_manager.configure()
 dmanager = dumper.DumperManager(job_manager=jmanager)
 dmanager.register_sources(dataload.__sources__)
 dmanager.schedule_all()
-# manually register biothings source dumper
-# this dumper will download whatever is necessary to update an ES index
-from dataload.sources.biothings import BiothingsDumper
-from biothings.utils.es import ESIndexer
-from biothings.utils.backend import DocESBackend
-BiothingsDumper.BIOTHINGS_APP = "t.biothings.io"
-pidxr = partial(ESIndexer,index=config.ES_INDEX_NAME,doc_type=config.ES_DOC_TYPE,es_host=config.ES_HOST)
-partial_backend = partial(DocESBackend,pidxr)
-BiothingsDumper.TARGET_BACKEND = partial_backend
-dmanager.register_classes([BiothingsDumper])
 
 # will check every 10 seconds for sources to upload
 umanager = uploader.UploaderManager(poll_schedule = '* * * * * */10', job_manager=jmanager)
 umanager.register_sources(dataload.__sources__)
-# manually register biothings source uploader
-# this uploader will use dumped data to update an ES index
-from dataload.sources.biothings import BiothingsUploader
-BiothingsUploader.TARGET_BACKEND = partial_backend
-# syncer will work on index used in web part
-partial_syncer = partial(syncer_manager.sync,"es",target_backend=config.ES_INDEX_NAME)
-BiothingsUploader.SYNCER_FUNC = partial_syncer
-BiothingsUploader.AUTO_PURGE_INDEX = True # because we believe
-umanager.register_classes([BiothingsUploader])
-umanager.poll()
 
 hasgene = HasGeneMapper(name="has_gene")
 pbuilder = partial(TaxonomyDataBuilder,mappers=[hasgene])

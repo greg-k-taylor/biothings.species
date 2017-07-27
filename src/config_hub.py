@@ -70,7 +70,7 @@ ES_HOST = 'localhost:9200'
 # own application. Create a config.py file, import that config_common
 # file as:
 #
-#   from config_common import *
+#   from config_hub import *
 #
 # then define the following variables to fit your needs. You can also override any
 # any other variables in this file as required. Variables defined as ValueError() exceptions
@@ -98,7 +98,7 @@ HUB_DB_BACKEND = ConfigurationError("Define Hub DB connection")
 # For now, other options are: mongodb, sqlite3, elasticsearch
 #HUB_DB_BACKEND = {
 #        "module" : "biothings.utils.sqlite3",
-#        "sqlite_db_foder" : "./db",
+#        "sqlite_db_folder" : "./db",
 #        }
 #HUB_DB_BACKEND = {
 #        "module" : "biothings.utils.mongo",
