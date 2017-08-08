@@ -8,7 +8,7 @@ if src_path not in sys.path:
 from tornado.testing import AsyncHTTPTestCase
 from tornado.web import Application
 from tests.tests import MySpeciesTest
-from www.settings import MySpeciesWebSettings
+from web.settings import MySpeciesWebSettings
 from biothings.tests.test_helper import TornadoRequestHelper
 #from www.api.handlers import return_applist
 
