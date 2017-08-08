@@ -61,7 +61,11 @@ GA_TRACKER_URL = 't.biothings.io'
 
 HIPCHAT_MESSAGE_COLOR = 'purple'
 
-STATUS_CHECK_ID = ''
+STATUS_CHECK = {
+    'id': '9606',
+    'index': 'taxonomy',
+    'doc_type': 'taxon'
+}
 
 # KWARGS for taxon API
 DEFAULT_FALSE_BOOL_TYPEDEF = {'default': False, 'type': bool}
