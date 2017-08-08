@@ -1,4 +1,4 @@
-import biothings.dataindex.indexer as indexer
+import biothings.hub.dataindex.indexer as indexer
 
 
 class TaxonomyIndexer(indexer.Indexer):

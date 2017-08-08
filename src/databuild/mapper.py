@@ -2,7 +2,7 @@ import biothings, config
 biothings.config_for_app(config)
 from biothings.utils.common import loadobj
 import biothings.utils.mongo as mongo
-import biothings.databuild.mapper as mapper
+import biothings.hub.databuild.mapper as mapper
 # just to get the collection name
 from dataload.sources.geneinfo.uploader import GeneInfoUploader
 from dataload.sources.taxonomy.uploader import TaxonomyNodesUploader

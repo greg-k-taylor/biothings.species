@@ -1,6 +1,6 @@
 import os
 
-import biothings.dataload.uploader as uploader
+import biothings.hub.dataload.uploader as uploader
 from .parser import parse_refseq_names, parse_refseq_nodes
 
 

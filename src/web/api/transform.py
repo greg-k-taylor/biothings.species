@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from biothings.www.api.es.transform import ESResultTransformer
+from biothings.web.api.es.transform import ESResultTransformer
 from biothings.utils.common import is_str, is_seq
 from collections import OrderedDict
 #import logging
