@@ -4,8 +4,8 @@ from biothings.utils.common import loadobj
 import biothings.utils.mongo as mongo
 import biothings.hub.databuild.mapper as mapper
 # just to get the collection name
-from dataload.sources.geneinfo.uploader import GeneInfoUploader
-from dataload.sources.taxonomy.uploader import TaxonomyNodesUploader
+from ..dataload.sources.geneinfo.uploader import GeneInfoUploader
+from ..dataload.sources.taxonomy.uploader import TaxonomyNodesUploader
 
 
 class HasGeneMapper(mapper.BaseMapper):

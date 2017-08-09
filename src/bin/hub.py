@@ -21,16 +21,16 @@ loop = asyncio.get_event_loop()
 jmanager = JobManager(loop,num_workers=config.HUB_MAX_WORKERS,
                       max_memory_usage=config.HUB_MAX_MEM_USAGE)
 
-import dataload
+import hub.dataload
 import biothings.hub.dataload.uploader as uploader
 import biothings.hub.dataload.dumper as dumper
 import biothings.hub.databuild.builder as builder
 import biothings.hub.databuild.differ as differ
 import biothings.hub.databuild.syncer as syncer
 import biothings.hub.dataindex.indexer as indexer
-from databuild.mapper import HasGeneMapper
-from databuild.builder import TaxonomyDataBuilder
-from dataindex.indexer import TaxonomyIndexer 
+from hub.databuild.mapper import HasGeneMapper
+from hub.databuild.builder import TaxonomyDataBuilder
+from hub.dataindex.indexer import TaxonomyIndexer 
 
 differ_manager = differ.DifferManager(job_manager=jmanager)
 differ_manager.configure()
@@ -38,12 +38,12 @@ syncer_manager = syncer.SyncerManager(job_manager=jmanager)
 syncer_manager.configure()
 
 dmanager = dumper.DumperManager(job_manager=jmanager)
-dmanager.register_sources(dataload.__sources__)
+dmanager.register_sources(hub.dataload.__sources__)
 dmanager.schedule_all()
 
 # will check every 10 seconds for sources to upload
 umanager = uploader.UploaderManager(poll_schedule = '* * * * * */10', job_manager=jmanager)
-umanager.register_sources(dataload.__sources__)
+umanager.register_sources(hub.dataload.__sources__)
 umanager.poll()
 
 hasgene = HasGeneMapper(name="has_gene")
