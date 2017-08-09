@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import asyncio, asyncssh, sys
-import concurrent.futures
 from functools import partial
+from collections import OrderedDict
 
 import config, biothings
 biothings.config_for_app(config)
@@ -18,13 +18,8 @@ logging.info("Hub database: %s" % biothings.config.DATA_HUB_DB_DATABASE)
 
 from biothings.utils.manager import JobManager
 loop = asyncio.get_event_loop()
-process_queue = concurrent.futures.ProcessPoolExecutor(max_workers=config.HUB_MAX_WORKERS)
-thread_queue = concurrent.futures.ThreadPoolExecutor()
-loop.set_default_executor(process_queue)
-jmanager = JobManager(loop,
-                      process_queue, thread_queue,
-                      max_memory_usage=None,
-                      )
+jmanager = JobManager(loop,num_workers=config.HUB_MAX_WORKERS,
+                      max_memory_usage=config.HUB_MAX_MEM_USAGE)
 
 import dataload
 import biothings.hub.dataload.uploader as uploader
@@ -49,6 +44,7 @@ dmanager.schedule_all()
 # will check every 10 seconds for sources to upload
 umanager = uploader.UploaderManager(poll_schedule = '* * * * * */10', job_manager=jmanager)
 umanager.register_sources(dataload.__sources__)
+umanager.poll()
 
 hasgene = HasGeneMapper(name="has_gene")
 pbuilder = partial(TaxonomyDataBuilder,mappers=[hasgene])
@@ -57,45 +53,49 @@ bmanager = builder.BuilderManager(
         builder_class=pbuilder,
         poll_schedule="* * * * * */10")
 bmanager.configure()
-bmanager.poll()
+#bmanager.poll()
 
 pindexer = partial(TaxonomyIndexer,es_host=config.ES_HOST)
 index_manager = indexer.IndexerManager(pindexer=pindexer,job_manager=jmanager)
 index_manager.configure()
 
-from biothings.utils.hub import schedule, top, pending, done
+from biothings.utils.hub import schedule, pending, done
 
-COMMANDS = {
-        # dump commands
+COMMANDS = OrderedDict()
+# dump commands
+COMMANDS["dump"] = dmanager.dump_src
+# upload commands
+COMMANDS["upload"] = umanager.upload_src
+COMMANDS["upload_all"] = umanager.upload_all
+# building/merging
+COMMANDS["merge"] = partial(bmanager.merge,"taxonomy")
+COMMANDS["mongo_sync"] = partial(syncer_manager.sync,"mongo")
+COMMANDS["es_sync"] = partial(syncer_manager.sync,"es")
+# diff
+COMMANDS["diff"] = partial(differ_manager.diff,"jsondiff")
+COMMANDS["upload_diff"] = differ_manager.upload_diff
+COMMANDS["scdiff"] = partial(differ_manager.diff,"jsondiff-selfcontained")
+COMMANDS["report"] = differ_manager.diff_report
+# indexing commands
+COMMANDS["index"] = index_manager.index
+COMMANDS["snapshot"] = index_manager.snapshot
+
+EXTRA_NS = {
         "dm" : dmanager,
-        "dump" : dmanager.dump_src,
-        # upload commands
         "um" : umanager,
-        "upload" : umanager.upload_src,
-        "upload_all" : umanager.upload_all,
-        # building/merging
         "bm" : bmanager,
-        "merge" : partial(bmanager.merge,"taxonomy"),
-        "mongo_sync" : partial(syncer_manager.sync,"mongo"),
-        "es_sync" : partial(syncer_manager.sync,"es"),
         "sm" : syncer_manager,
-        # diff
         "dim" : differ_manager,
-        "diff" : partial(differ_manager.diff,"jsondiff"),
-        "upload_diff" : differ_manager.upload_diff,
-        "scdiff" : partial(differ_manager.diff,"jsondiff-selfcontained"),
-        "report": differ_manager.diff_report,
-        # indexing commands
         "im" : index_manager,
-        "index" : index_manager.index,
-        "snapshot" : index_manager.snapshot,
         ## admin/advanced
         #"loop" : loop,
-        #"pqueue" : process_queue,
-        #"tqueue" : thread_queue,
+        "q" : jmanager.process_queue,
+        "t" : jmanager.thread_queue,
         "g": globals(),
+        "l":loop,
+        "j":jmanager,
         "sch" : partial(schedule,loop),
-        "top" : partial(top,process_queue,thread_queue),
+        "top" : jmanager.top,
         "pending" : pending,
         "done" : done,
         }
@@ -104,15 +104,16 @@ passwords = {
         'guest': '', # guest account with no password
         }
 
+
 from biothings.utils.hub import start_server
 
-server = start_server(loop, "Species hub",passwords=passwords,
-        port=config.HUB_SSH_PORT,commands=COMMANDS)
+ssh_server = start_server(loop, "Species hub",passwords=passwords,
+        port=config.HUB_SSH_PORT,commands=COMMANDS,extra_ns=EXTRA_NS)
 
 try:
-    loop.run_until_complete(server)
+    loop.run_until_complete(asyncio.wait([ssh_server]))
 except (OSError, asyncssh.Error) as exc:
-    sys.exit('Error starting server: ' + str(exc))
+    sys.exit('Error starting SSH server: ' + str(exc))
 
 loop.run_forever()
 
