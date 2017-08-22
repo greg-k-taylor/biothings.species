@@ -73,12 +73,14 @@ COMMANDS["mongo_sync"] = partial(syncer_manager.sync,"mongo")
 COMMANDS["es_sync"] = partial(syncer_manager.sync,"es")
 # diff
 COMMANDS["diff"] = partial(differ_manager.diff,"jsondiff")
-COMMANDS["upload_diff"] = differ_manager.upload_diff
+COMMANDS["publish_diff"] = differ_manager.publish_diff
 COMMANDS["scdiff"] = partial(differ_manager.diff,"jsondiff-selfcontained")
 COMMANDS["report"] = differ_manager.diff_report
+COMMANDS["release_note"] = differ_manager.release_note
 # indexing commands
 COMMANDS["index"] = index_manager.index
 COMMANDS["snapshot"] = index_manager.snapshot
+COMMANDS["publish_snapshot"] = index_manager.publish_snapshot
 
 EXTRA_NS = {
         "dm" : dmanager,

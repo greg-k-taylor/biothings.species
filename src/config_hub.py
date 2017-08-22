@@ -48,6 +48,22 @@ CACHE_FORMAT = "xz"
 # "" means production
 HUB_ENV = ""
 
+# ES snapshot name used for sending snapshot data
+# (access controlled, uses key/secret)
+SNAPSHOT_REPOSITORY = "taxon_repository"
+# ES snapshot name accessible (usually using a URL)
+# These two snapshot configs should point to
+# the same location in a way. The different is the first 
+# used access controller to write data, and the second is read-only
+READONLY_SNAPSHOT_REPOSITORY ="taxonomy_url"
+
+# bucket/folder containing releases
+S3_DIFF_BUCKET = "biothings-diffs"
+# what sub-folder should be used within diff bucket to upload diff files
+S3_DIFF_FOLDER = "t.biothings.io"
+
+
+
 # default logger for the hub
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -65,9 +81,20 @@ HIPCHAT_CONFIG = {
 HUB_SSH_PORT = 8022
 
 # Temporarily required for biothings update hub (full/incr updates)
-ES_INDEX_NAME = 'taxonomy_current'
+ES_INDEX_NAME = 'taxon_current'
 ES_DOC_TYPE = 'taxon'
+# used to directly index documents (usually the prod)
 ES_HOST = 'localhost:9200'
+# used to create snapshot internally before deploying to prod
+ES_SNAPSHOT_HOST = 'localhost:9200'
+
+# Role, when master, hub will publish data (updates, snapshot, etc...) that
+# other instances can use (production, standalones)
+BIOTHINGS_ROLE = "slave"
+
+# key/secret to access AWS S3 (only used when publishing releases, role=master)
+AWS_KEY = ''
+AWS_SECRET = ''
 
 ########################################
 # APP-SPECIFIC CONFIGURATION VARIABLES #
