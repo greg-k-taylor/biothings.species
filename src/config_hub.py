@@ -70,12 +70,17 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging
 
 # If you need notifications to hipchat, fill with "token",
-# "roomid" and "from" keys to broadcast message to a Hipchat room.
+# "roomid" and "from" keys to broadcast m#essage to a Hipchat room.
+# 'host' is a hipchat's subdomain, and 'usertoken' is a valid user
+# (real user) token, used to attach file to messages (hipchat requires
+# a real user to do that...)
 HIPCHAT_CONFIG = {
         #    'token': 'abdce',
         #    'roomid': 123456,
-        #    'from': 'hub'
-        }
+        #    'from': 'hub',
+        #    'host' : 'xxxx.hipchat.com',
+        #    'usertoken' : 'abcdefghijkl'
+        }    
 
 # SSH port for hub console
 HUB_SSH_PORT = 8022

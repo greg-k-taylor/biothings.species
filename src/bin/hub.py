@@ -53,7 +53,7 @@ bmanager = builder.BuilderManager(
         builder_class=pbuilder,
         poll_schedule="* * * * * */10")
 bmanager.configure()
-#bmanager.poll()
+bmanager.poll()
 
 pindexer = partial(TaxonomyIndexer,es_host=config.ES_HOST)
 index_manager = indexer.IndexerManager(pindexer=pindexer,job_manager=jmanager)
