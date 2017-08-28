@@ -8,3 +8,4 @@ IPython
 boto
 jsonpointer
 prettytable
+beautifulsoup4
