@@ -3,7 +3,7 @@
 #############
 import os
 
-DATA_HUB_DB_DATABASE = "hub_config"                       # db containing the following (internal use)
+DATA_HUB_DB_DATABASE = "taxonomy_hubdb"               # db containing the following (internal use)
 DATA_SRC_MASTER_COLLECTION = 'src_master'             # for metadata of each src collections
 DATA_SRC_DUMP_COLLECTION = 'src_dump'                 # for src data download information
 DATA_SRC_BUILD_COLLECTION = 'src_build'               # for src data build information
@@ -59,8 +59,10 @@ READONLY_SNAPSHOT_REPOSITORY ="taxonomy_url"
 
 # bucket/folder containing releases
 S3_DIFF_BUCKET = "biothings-diffs"
+# bucket containing release informations
+S3_RELEASE_BUCKET = "biothings-releases"
 # what sub-folder should be used within diff bucket to upload diff files
-S3_DIFF_FOLDER = "t.biothings.io"
+S3_APP_FOLDER = "t.biothings.io"
 
 
 
@@ -154,5 +156,15 @@ DATA_ARCHIVE_ROOT = ConfigurationError("Define path to folder which will contain
 LOG_FOLDER = ConfigurationError("Define path to folder which will contain log files")
 # Usually inside DATA_ARCHIVE_ROOT
 #LOG_FOLDER = os.path.join(DATA_ARCHIVE_ROOT,'logs')
+
+# Path to folder containing diff files
+DIFF_PATH = ConfigurationError("Define path to folder which will contain output files from diff")
+# Usually inside DATA_ARCHIVE_ROOT
+#DIFF_PATH = os.path.join(DATA_ARCHIVE_ROOT,"diff")
+
+# Path to folder containing release note files
+RELEASE_PATH = ConfigurationError("Define path to folder which will contain release files")
+# Usually inside DATA_ARCHIVE_ROOT                                                                                                                                                                                                     
+#RELEASE_PATH = os.path.join(DATA_ARCHIVE_ROOT,"release")
 
 
