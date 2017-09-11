@@ -32,8 +32,12 @@ from hub.databuild.mapper import HasGeneMapper
 from hub.databuild.builder import TaxonomyDataBuilder
 from hub.dataindex.indexer import TaxonomyIndexer 
 
-differ_manager = differ.DifferManager(job_manager=jmanager)
+differ_manager = differ.DifferManager(job_manager=jmanager,
+        poll_schedule="* * * * * */10")
 differ_manager.configure()
+differ_manager.poll("diff",lambda doc: differ_manager.diff("jsondiff-selfcontained",old=None,new=doc["_id"]))
+differ_manager.poll("release_note",lambda doc: differ_manager.release_note(old=None,new=doc["_id"]))
+
 syncer_manager = syncer.SyncerManager(job_manager=jmanager)
 syncer_manager.configure()
 
@@ -44,7 +48,7 @@ dmanager.schedule_all()
 # will check every 10 seconds for sources to upload
 umanager = uploader.UploaderManager(poll_schedule = '* * * * * */10', job_manager=jmanager)
 umanager.register_sources(hub.dataload.__sources__)
-umanager.poll()
+umanager.poll('upload',lambda doc: umanager.upload_src(doc["_id"]))
 
 hasgene = HasGeneMapper(name="has_gene")
 pbuilder = partial(TaxonomyDataBuilder,mappers=[hasgene])
@@ -53,7 +57,7 @@ bmanager = builder.BuilderManager(
         builder_class=pbuilder,
         poll_schedule="* * * * * */10")
 bmanager.configure()
-bmanager.poll()
+bmanager.poll("build",lambda conf: bmanager.merge(conf["_id"]))
 
 pindexer = partial(TaxonomyIndexer,es_host=config.ES_HOST)
 index_manager = indexer.IndexerManager(pindexer=pindexer,job_manager=jmanager)
