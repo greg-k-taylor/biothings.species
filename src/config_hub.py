@@ -17,7 +17,7 @@ MAX_REPORTED_IDS = 1000
 MAX_RANDOMLY_PICKED = 10
 
 # where to store info about processes launched by the hub
-RUN_DIR = './run'
+RUN_DIR = '/tmp/run'
 
 # Max queued jobs in job manager
 # this shouldn't be 0 to make sure a job is pending and ready to be processed
