@@ -106,10 +106,7 @@ EXTRA_NS = {
         "done" : done,
         }
 
-passwords = {
-        'biothings': 'species', # guest account with low security password
-        }
-
+passwords = config.HUB_PASSWD
 
 from biothings.utils.hub import start_server
 
