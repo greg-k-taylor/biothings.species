@@ -60,8 +60,9 @@ bmanager.configure()
 bmanager.poll("build",lambda conf: bmanager.merge(conf["_id"]))
 
 pindexer = partial(TaxonomyIndexer,es_host=config.ES_HOST)
-index_manager = indexer.IndexerManager(pindexer=pindexer,job_manager=jmanager)
-index_manager.configure()
+index_manager = indexer.IndexerManager(job_manager=jmanager)
+index_manager.configure([{"default" : pindexer}])
+
 
 from biothings.utils.hub import schedule, pending, done
 
@@ -106,7 +107,7 @@ EXTRA_NS = {
         }
 
 passwords = {
-        'guest': '', # guest account with no password
+        'biothings': 'species', # guest account with low security password
         }
 
 
