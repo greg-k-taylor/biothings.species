@@ -61,8 +61,7 @@ bmanager.poll("build",lambda conf: bmanager.merge(conf["_id"]))
 
 pindexer = partial(TaxonomyIndexer,es_host=config.ES_HOST)
 index_manager = indexer.IndexerManager(job_manager=jmanager)
-index_manager.configure([{"default" : pindexer}])
-
+index_manager.configure([{"default":pindexer}])
 
 from biothings.utils.hub import schedule, pending, done
 
@@ -73,6 +72,7 @@ COMMANDS["dump"] = dmanager.dump_src
 COMMANDS["upload"] = umanager.upload_src
 COMMANDS["upload_all"] = umanager.upload_all
 # building/merging
+COMMANDS["lsmerge"] = bmanager.list_merge 
 COMMANDS["merge"] = partial(bmanager.merge,"taxonomy")
 COMMANDS["mongo_sync"] = partial(syncer_manager.sync,"mongo")
 COMMANDS["es_sync"] = partial(syncer_manager.sync,"es")
@@ -82,7 +82,7 @@ COMMANDS["diff"] = partial(differ_manager.diff,"jsondiff-selfcontained")
 COMMANDS["report"] = differ_manager.diff_report
 COMMANDS["release_note"] = differ_manager.release_note
 # indexing commands
-COMMANDS["index"] = index_manager.index
+COMMANDS["index"] = partial(index_manager.index,"default")
 COMMANDS["snapshot"] = index_manager.snapshot
 COMMANDS["publish_snapshot"] = partial(index_manager.publish_snapshot,config.S3_APP_FOLDER)
 
