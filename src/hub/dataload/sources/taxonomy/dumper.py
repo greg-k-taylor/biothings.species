@@ -30,5 +30,5 @@ class TaxonomyDumper(FTPDumper):
             # register new release (will be stored in backend)
             self.to_dump.append({"remote": file_to_dump, "local":new_localfile})
 
-    def post_dump(self):
+    def post_dump(self, *args, **kwargs):
         untargzall(self.new_data_folder)
